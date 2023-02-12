@@ -5,8 +5,10 @@ namespace Tnapf\Router\Routing;
 use Closure;
 use stdClass;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Router;
 
 class Route {
+    public readonly string $uri;
     private array $methods;
     private array $before = [];
     private array $after = [];
@@ -17,10 +19,12 @@ class Route {
     * @param class-string<Controller>|Closure $controller
     * @param Methods ...$methods
     */
-    public function __construct(public readonly string $uri, public readonly string|Closure $controller, Methods ...$methods) {
+    public function __construct(string $uri, public readonly string|Closure $controller, Methods ...$methods) {
         if (!str_starts_with($uri, "/")) {
-            $this->uri = "/{$uri}";
+            $uri = "/{$uri}";
         }
+
+        $this->uri = Router::getBaseUri()."$uri";
 
         $this->parameters = new stdClass;
 

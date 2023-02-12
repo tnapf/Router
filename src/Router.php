@@ -24,6 +24,11 @@ final class Router {
     private static array $routes = [];
 
     /**
+     * @var array
+     */
+    private static array $mount;
+
+    /**
      * @var Route[][]
      */
     private static array $catchers = [
@@ -135,7 +140,31 @@ final class Router {
      */
     public static function addRoute(Route &$route): void
     {
+        if (isset(self::$mount)) {
+            foreach (self::$mount["beforeMiddleware"] as $before) {
+                $route->before($before);
+            }
+            
+            foreach (self::$mount["afterMiddleware"] as $after) {
+                $route->before($after);
+            }
+        }
+
         self::$routes[$route->uri] = &$route;
+    }
+
+    public static function mount(string $baseUri, Closure $mounting, array $beforeMiddleware = [], array $afterMiddleware = []): void
+    {
+        self::$mount = compact("baseUri", "beforeMiddleware", "afterMiddleware");
+
+        call_user_func($mounting);
+
+        self::$mount = [];
+    }
+
+    public static function getBaseUri(): string
+    {
+        return self::$mount["baseUri"] ?? "";
     }
 
     /**
