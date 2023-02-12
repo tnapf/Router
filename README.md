@@ -203,7 +203,7 @@ $env->twig = new Environment(new \Twig\Loader\FilesystemLoader("/path/to/views")
 // ...
 
 Router::get("/home", function (ServerRequestInterface $req, ResponseInterface $res): ResponseInterface {
-	return new HtmlResponse($env->get("twig")->render("home.html"));
+    return new HtmlResponse($env->get("twig")->render("home.html"));
 });
 ```
 
