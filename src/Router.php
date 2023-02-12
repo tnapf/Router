@@ -257,19 +257,50 @@ final class Router {
         $params = [$request, null, $args];
         
         $befores = $route->getBefores();
-
-        array_unshift($befores, function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next) {
-            echo "starting";
-
+        
+        $basicMiddleware = static function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next) {
             $next($response);
-        });
+        };
+
+        array_unshift($befores, $basicMiddleware);
 
         $nexts = [];
 
         foreach (array_keys($befores) as $key) {
-            $nexts[] = static function (ResponseInterface $response, mixed ...$extra) use ($route, $params, $args, $request, $befores, $key, &$nexts): ResponseInterface {
+            $nexts[] = static function (ResponseInterface $response, mixed ...$extra) use ($route, $basicMiddleware, $params, $befores, $key, &$nexts): ResponseInterface {
                 if ($key === count($befores)-1) {
                     $controller = $route->controller;
+
+                    if (!empty($route->getAfters()) && !isset($afters)) {
+                        $nexts = [];
+                        $afters = $route->getAfters();
+                        array_unshift($afters, $basicMiddleware);
+
+                        foreach (array_keys($afters) as $key) {
+                            $nexts[] = static function (ResponseInterface $response, mixed ...$extra) use ($params, $afters, $key, &$nexts): ResponseInterface {
+                                $controller = $afters[$key+1] ?? null;
+                                $params[] = $nexts[$key+1] ?? null;
+
+                                if ($controller === null) {
+                                    return $response;
+                                }
+                
+                                $params[1] = $response;
+                
+                                $params = array_merge($params, $extra);
+                
+                                if (!is_callable($controller)) {
+                                    $response = $controller::handle(...$params);
+                                } else {
+                                    $response = $controller(...$params);
+                                }
+                
+                                return $response;
+                            };
+                        }
+
+                        $params[] = $nexts[0];
+                    }
                 } else {
                     $controller = $befores[$key+1];
                     $params[] = $nexts[$key+1];
