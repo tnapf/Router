@@ -4,8 +4,6 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
-- [Tnapf/Router](#tnapfrouter)
-- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
 - [Routing](#routing)
@@ -27,6 +25,7 @@ Totally Not Another PHP Framework's Route Component
 - [Middleware](#middleware)
   - [Before Middleware](#before-middleware)
   - [After Middleware](#after-middleware)
+- [Mounting routes (Group routes)](#mounting-routes-group-routes)
 
 # Installation
 
@@ -360,4 +359,33 @@ Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseI
 
     return $res;
 });
+```
+
+# Mounting routes (Group routes)
+
+If you would multiple routes to inherit the same prefix URI and before/after middleware then you can define them inside the mount method...
+
+```php
+Router::mount("/app", function () {
+    Router::get("/", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, int $userId) {
+        return new TextResponse("Welcome Home!\nUserId: $userId");
+    });
+
+    Router::get("/channel/{channel}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, int $userId) {
+        return new TextResponse("Looking at channelId {$args->channel} as UserId $userId");
+    })->setParameter("channel", "\d+");
+
+    Router::catch(HttpNotFound::class, function () {
+        return new TextResponse("App Route Not Found");
+    });
+    
+    Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
+        return new TextResponse("Channel id {$args->channel} is invalid");
+    }, "/channel/{channel}");
+}, [ // before middleware here
+    function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, ?Closure $next = null): ResponseInterface
+    {
+        return $next($response, mt_rand(0, 100));
+    }
+], [ /* after middleware here */ ]);
 ```
