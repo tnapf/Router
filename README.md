@@ -4,6 +4,8 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
+- [Tnapf/Router](#tnapfrouter)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
 - [Routing](#routing)
@@ -22,6 +24,8 @@ Totally Not Another PHP Framework's Route Component
   - [404 Catcher](#404-catcher)
   - [Specific URI's](#specific-uris)
   - [Custom Catchables](#custom-catchables)
+- [Middleware](#middleware)
+  - [Before Middleware](#before-middleware)
 
 # Installation
 
@@ -292,3 +296,40 @@ Now you can catch UserNotFound
 
 
 **Note: Catchers are treated just like routes meaning they can have custom parameters as shown in [Basic Usage](#basic-usage)**
+
+# Middleware
+
+Middleware is software that connects the model and view in an MVC application, facilitating the communication and data flow between these two components while also providing a layer of abstraction, decoupling the model and view and allowing them to interact without needing to know the details of how the other component operates.
+
+A good example is having before middleware that makes sure the user is an administrator before they go to a restricted page. You could do this in your routes controller for every admin page but that would be redundant. Or for after middleware, you may have a REST API that returns a JSON response. You can have after middleware to make sure the JSON response isn't malformed.
+
+## Before Middleware
+
+You can add middleware to a route by invoking the before method and supply controller(s). 
+
+**NOTE: The controllers will be invoked in the order they're appended!**
+
+```php
+Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
+    $users = ["cmdstr", "realdiegopoptart"];
+
+    if (!in_array($args->username, $users)) {
+        throw new HttpNotFound($req);
+    }
+
+    $res->getBody()->write(" {$args->username}'s profile");
+
+    return $res;
+})->setParameter("username", "[a-zA-Z_]+")->before(function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next): ResponseInterface
+{
+    $res = new TextResponse("Viewing");
+
+    $res->getBody()->seek(0, SEEK_END);
+
+    return $next($res);
+});
+```
+
+You can also include a class string as the controller, just make sure that class extends `Tnapf\Router\Routing\MiddlewareController`
+
+*Special note about middleware, you can pass variables from beforeMiddleware to the main route or from the main route to afterMiddleware by supplying it as the second argument in the next closure.*
