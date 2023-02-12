@@ -1,0 +1,405 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "a16db080b51304861df27441b837a4c5",
+    "packages": [
+        {
+            "name": "commandstring/utils",
+            "version": "v1.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/CommandString/Utils.git",
+                "reference": "785d0bd5d2aa12ab0b9922ec7e3cbd2e42550300"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/CommandString/Utils/zipball/785d0bd5d2aa12ab0b9922ec7e3cbd2e42550300",
+                "reference": "785d0bd5d2aa12ab0b9922ec7e3cbd2e42550300",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CommandString\\Utils\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/CommandString/Utils/issues",
+                "source": "https://github.com/CommandString/Utils/tree/v1.4.1"
+            },
+            "time": "2023-01-04T14:41:32+00:00"
+        },
+        {
+            "name": "httpsoft/http-emitter",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/httpsoft/http-emitter.git",
+                "reference": "d9ab21168b3243a1c4a080698de326c4c92c82b1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/httpsoft/http-emitter/zipball/d9ab21168b3243a1c4a080698de326c4c92c82b1",
+                "reference": "d9ab21168b3243a1c4a080698de326c4c92c82b1",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.0",
+                "psr/http-message": "^1.0"
+            },
+            "provide": {
+                "psr/http-message-implementation": "1.0"
+            },
+            "require-dev": {
+                "httpsoft/http-message": "^1.0",
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.5",
+                "vimeo/psalm": "^4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HttpSoft\\Emitter\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Evgeniy Zyubin",
+                    "email": "mail@devanych.ru",
+                    "homepage": "https://devanych.ru/",
+                    "role": "Founder and lead developer"
+                }
+            ],
+            "description": "Emitting of PSR-7 Response implementation",
+            "homepage": "https://httpsoft.org/",
+            "keywords": [
+                "emitter",
+                "http",
+                "http-emitter",
+                "http-message",
+                "php",
+                "psr-7"
+            ],
+            "support": {
+                "docs": "https://httpsoft.org/docs/emitter",
+                "issues": "https://github.com/httpsoft/http-emitter/issues",
+                "source": "https://github.com/httpsoft/http-emitter"
+            },
+            "time": "2020-12-12T17:45:02+00:00"
+        },
+        {
+            "name": "httpsoft/http-message",
+            "version": "1.0.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/httpsoft/http-message.git",
+                "reference": "bb3f88feeb67061949339ee47a5e0b648f2d5c9a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/httpsoft/http-message/zipball/bb3f88feeb67061949339ee47a5e0b648f2d5c9a",
+                "reference": "bb3f88feeb67061949339ee47a5e0b648f2d5c9a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.0",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.0"
+            },
+            "provide": {
+                "psr/http-factory-implementation": "1.0",
+                "psr/http-message-implementation": "1.0"
+            },
+            "require-dev": {
+                "php-http/psr7-integration-tests": "1.1.1",
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.6",
+                "vimeo/psalm": "^4.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HttpSoft\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Evgeniy Zyubin",
+                    "email": "mail@devanych.ru",
+                    "homepage": "https://devanych.ru/",
+                    "role": "Founder and lead developer"
+                }
+            ],
+            "description": "Strict and fast implementation of PSR-7 and PSR-17",
+            "homepage": "https://httpsoft.org/",
+            "keywords": [
+                "http",
+                "http-message",
+                "php",
+                "psr-17",
+                "psr-7"
+            ],
+            "support": {
+                "docs": "https://httpsoft.org/docs/message",
+                "issues": "https://github.com/httpsoft/http-message/issues",
+                "source": "https://github.com/httpsoft/http-message"
+            },
+            "time": "2022-07-21T15:28:12+00:00"
+        },
+        {
+            "name": "httpsoft/http-response",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/httpsoft/http-response.git",
+                "reference": "997a934c6d0cc91166b05ced65639d82be585afb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/httpsoft/http-response/zipball/997a934c6d0cc91166b05ced65639d82be585afb",
+                "reference": "997a934c6d0cc91166b05ced65639d82be585afb",
+                "shasum": ""
+            },
+            "require": {
+                "httpsoft/http-message": "^1.0",
+                "php": "^7.4|^8.0"
+            },
+            "provide": {
+                "psr/http-message-implementation": "1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.5",
+                "vimeo/psalm": "^4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HttpSoft\\Response\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Evgeniy Zyubin",
+                    "email": "mail@devanych.ru",
+                    "homepage": "https://devanych.ru/",
+                    "role": "Founder and lead developer"
+                }
+            ],
+            "description": "PSR-7 Response implementations",
+            "homepage": "https://httpsoft.org/",
+            "keywords": [
+                "http",
+                "http-message",
+                "http-response",
+                "php",
+                "psr-7",
+                "responses"
+            ],
+            "support": {
+                "docs": "https://httpsoft.org/docs/response",
+                "issues": "https://github.com/httpsoft/http-response/issues",
+                "source": "https://github.com/httpsoft/http-response"
+            },
+            "time": "2020-12-12T17:03:26+00:00"
+        },
+        {
+            "name": "httpsoft/http-server-request",
+            "version": "1.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/httpsoft/http-server-request.git",
+                "reference": "af04dde0bcbce26c9ecdcab53468f790a2225952"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/httpsoft/http-server-request/zipball/af04dde0bcbce26c9ecdcab53468f790a2225952",
+                "reference": "af04dde0bcbce26c9ecdcab53468f790a2225952",
+                "shasum": ""
+            },
+            "require": {
+                "httpsoft/http-message": "^1.0",
+                "php": "^7.4|^8.0"
+            },
+            "provide": {
+                "psr/http-message-implementation": "1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5",
+                "squizlabs/php_codesniffer": "^3.6",
+                "vimeo/psalm": "^4.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "HttpSoft\\ServerRequest\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Evgeniy Zyubin",
+                    "email": "mail@devanych.ru",
+                    "homepage": "https://devanych.ru/",
+                    "role": "Founder and lead developer"
+                }
+            ],
+            "description": "Infrastructure for creating PSR-7 ServerRequest and UploadedFile",
+            "homepage": "https://httpsoft.org/",
+            "keywords": [
+                "http",
+                "http-message",
+                "http-server-request",
+                "php",
+                "psr-7"
+            ],
+            "support": {
+                "docs": "https://httpsoft.org/docs/server-request",
+                "issues": "https://github.com/httpsoft/http-server-request/issues",
+                "source": "https://github.com/httpsoft/http-server-request"
+            },
+            "time": "2021-07-20T14:36:14+00:00"
+        },
+        {
+            "name": "psr/http-factory",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-factory.git",
+                "reference": "12ac7fcd07e5b077433f5f2bee95b3a771bf61be"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-factory/zipball/12ac7fcd07e5b077433f5f2bee95b3a771bf61be",
+                "reference": "12ac7fcd07e5b077433f5f2bee95b3a771bf61be",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0.0",
+                "psr/http-message": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for PSR-7 HTTP message factories",
+            "keywords": [
+                "factory",
+                "http",
+                "message",
+                "psr",
+                "psr-17",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-factory/tree/master"
+            },
+            "time": "2019-04-30T12:38:16+00:00"
+        },
+        {
+            "name": "psr/http-message",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "homepage": "https://github.com/php-fig/http-message",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/master"
+            },
+            "time": "2016-08-06T14:39:51+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=8.1"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
+}
