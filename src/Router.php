@@ -275,7 +275,10 @@ final class Router {
                     $params[] = $nexts[$key+1];
                 }
 
+                
                 $params[1] = $response;
+
+                $params = array_merge($params, $extra);
 
                 if (!is_callable($controller)) {
                     $response = $controller::handle(...$params);
