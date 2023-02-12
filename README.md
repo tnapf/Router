@@ -21,6 +21,7 @@ Totally Not Another PHP Framework's Route Component
   - [500 Catcher](#500-catcher)
   - [404 Catcher](#404-catcher)
   - [Specific URI's](#specific-uris)
+  - [Custom Catchables](#custom-catchables)
 
 # Installation
 
@@ -77,7 +78,7 @@ $route = new Route("pattern", function() { /* ... */ }, Methods::GET);
 Router::addRoute($route);
 ```
 
-If you want to the same controller to be used for multiple methods you can do the following...
+If you want the same controller to be used for multiple methods you can do the following...
 
 ```php
 use Tnapf\Router\Enums\Methods;
@@ -202,7 +203,7 @@ Router::get("/home", function (ServerRequestInterface $req, ResponseInterface $r
 
 ## Class Controller
 
-Create class that extends `Tnapf\Router\Routing\Controller`
+Create a class that extends `Tnapf\Router\Routing\Controller`
 
 ```php
 class HomeController extends Controller {
@@ -255,12 +256,12 @@ Catchable routes are routes that are only invoked when exceptions are thrown whi
 ## 500 Catcher
 
 ```php
-Router::catch(HttpInternalServerError::class, function () {
+Router::catch(HttpInternalServerError::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
     return new TextResponse("An internal server error has occurred");
 });
 ```
 
-This will catch all exceptions thrown in any route and return a basic response.
+This will catch all exceptions thrown in any route and return a basic response. Also, note that the exception thrown will be stored in `$args->exception`
 
 
 ## 404 Catcher
@@ -279,4 +280,15 @@ Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, Respon
 }, "/users/{username}");
 ```
 
-**Note: Catchers are treated just likes routes meaning then can have custom parameters as shown in [Basic Usage](#basic-usage)**
+## Custom Catchables
+
+By default, you can only catch HttpNotFound and HttpInternalServerError (every other exception) but let's say you make a custom exception named UserNotFound you can use...
+
+```php
+Router::makeCatchable(UserNotFound::class)
+```
+
+Now you can catch UserNotFound
+
+
+**Note: Catchers are treated just like routes meaning they can have custom parameters as shown in [Basic Usage](#basic-usage)**
