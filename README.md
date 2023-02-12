@@ -381,7 +381,7 @@ Router::mount("/app", function () {
     
     Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
         return new TextResponse("Channel id {$args->channel} is invalid");
-    }, "/channel/{channel}");
+    }, "/channel/{channel}")->setParameter("channel", "[a-zA-Z]+");
 }, [ // before middleware here
     function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, ?Closure $next = null): ResponseInterface
     {
