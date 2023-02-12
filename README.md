@@ -107,7 +107,7 @@ Router::head('pattern', function() { /* ... */ });
 You can use this shorthand for a route that can be accessed using any method:
 
 ```php
-$router->all('pattern', function() { /* ... */ });
+Router::all('pattern', function() { /* ... */ });
 ```
 
 # Route Patterns
