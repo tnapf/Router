@@ -4,12 +4,23 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
-- [Installation](#Installation)
-- [Creating routes](#routing)
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+- [Routing](#routing)
+  - [Routing Shorthands](#routing-shorthands)
 - [Route Patterns](#route-patterns)
+  - [Static Route Patterns](#static-route-patterns)
+  - [Dynamic Placeholder-based Route Patterns](#dynamic-placeholder-based-route-patterns)
+  - [Dynamic PCRE-based Route Patterns](#dynamic-pcre-based-route-patterns)
 - [Controllers](#controllers)
-- [Using Template Engines](#template-engine-integration)
-- [Responses](#responding-to-requests)
+  - [Anonymous Function Controller](#anonymous-function-controller)
+  - [Class Controller](#class-controller)
+- [Template Engine Integration](#template-engine-integration)
+- [Responding to requests](#responding-to-requests)
+- [Catchable Routes](#catchable-routes)
+  - [500 Catcher](#500-catcher)
+  - [404 Catcher](#404-catcher)
+  - [Specific URI's](#specific-uris)
 
 # Installation
 
@@ -28,14 +39,33 @@ use Tnapf\Router\Router;
 use HttpSoft\Response\TextResponse;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Tnapf\Router\Exceptions\HttpInternalServerError;
+use Tnapf\Router\Exceptions\HttpNotFound;
 
 Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
+    $users = ["commandstring", "realdiegopoptart"];
+
+    if (!in_array($args->username, $users)) {
+        throw new HttpNotFound($req);
+    }
+
     return new TextResponse("Viewing {$args->username}'s Profile");
 })->setParameter("username", "[a-zA-Z_]+");
 
+Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
+    return new TextResponse("{$args->username} is not registered!");
+}, "/user/{username}")->setParameter("username", "[a-zA-Z_]+");
+
+Router::catch(HttpInternalServerError::class, function () {
+    return new TextResponse("An internal server error has occurred");
+});
+
+Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
+    return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
+});
+
 Router::run();
 ```
-
 
 # Routing
 
@@ -218,3 +248,36 @@ $response = new HttpSoft\Response\XmlResponse('<xmltag>XML</xmltag>');
 $response = new HttpSoft\Response\RedirectResponse('https/example.com');
 $response = new HttpSoft\Response\EmptyResponse();
 ```
+
+# Catchable Routes
+Catchable routes are routes that are only invoked when exceptions are thrown while handling a request. To create a catchable route you can do the following...
+
+## 500 Catcher
+
+```php
+Router::catch(HttpInternalServerError::class, function () {
+    return new TextResponse("An internal server error has occurred");
+});
+```
+
+This will catch all exceptions thrown in any route and return a basic response.
+
+
+## 404 Catcher
+
+```php
+Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
+    return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
+});
+```
+
+## Specific URI's
+
+```php
+Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
+    return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
+}, "/users/{username}");
+```
+
+**Note: Catchers are treated just likes routes meaning then can have custom parameters as shown in [Basic Usage](#basic-usage)**
+````
