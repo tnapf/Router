@@ -246,33 +246,62 @@ final class Router {
      * @param Route $route
      * @param stdClass|null $args
      * @param ServerRequestInterface $request
-     * @param mixed ...$extra
      * @return ResponseInterface
      */
-    private static function invokeRoute(Route $route, ?stdClass $args = null, ServerRequestInterface $request, mixed ...$extra): ResponseInterface
+    private static function invokeRoute(Route $route, ?stdClass $args = null, ServerRequestInterface $request): ResponseInterface
     {
         if ($args === null) {
             $args = new stdClass;
         }
 
-        $params = [$request, new Response, $args, $route, $extra];
+        $params = [$request, null, $args];
         
-        if (!is_callable($route->controller)) {
-            $response = $route->controller::handle(...$params);
-        } else {
-            /** @var Closure $controller */
-            $controller = $route->controller;
+        $befores = $route->getBefores();
 
-            $response = $controller(...$params);
+        array_unshift($befores, function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next) {
+            echo "starting";
 
-            $params = [$request, new Response, $args, $route, microtime(true)];
+            $next($response);
+        });
+
+        $nexts = [];
+
+        foreach (array_keys($befores) as $key) {
+            $nexts[] = static function (ResponseInterface $response, mixed ...$extra) use ($route, $params, $args, $request, $befores, $key, &$nexts): ResponseInterface {
+                if ($key === count($befores)-1) {
+                    $controller = $route->controller;
+                } else {
+                    $controller = $befores[$key+1];
+                    $params[] = $nexts[$key+1];
+                }
+
+                $params[1] = $response;
+
+                if (!is_callable($controller)) {
+                    $response = $controller::handle(...$params);
+                } else {
+                    $response = $controller(...$params);
+                }
+
+                return $response;
+            };
         }
 
-        return $response;
+        return $nexts[0](new Response);
     }
 
     public static function run(): void
     {
+        $sortByLength = function (Route $a, Route $b) {
+            return (strlen($a->uri) > strlen($b->uri));
+        };
+
+        foreach (self::$catchers as &$catcher) {
+            usort($catcher, $sortByLength);
+        }
+
+        usort(self::$routes, $sortByLength);
+
         $resolved = self::resolveRoute(self::$routes);
 
         foreach ($_FILES as $key => $file) {
