@@ -7,14 +7,29 @@ use HttpSoft\Emitter\SapiEmitter;
 use HttpSoft\Message\Response;
 use HttpSoft\Message\ServerRequest;
 use HttpSoft\Message\UploadedFile;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Tnapf\Router\Exceptions\HttpNotFound;
 use stdClass;
+use Throwable;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Routing\Controller;
 use Tnapf\Router\Routing\Route;
 
 final class Router {
-    public static array $routes = [];
+    /**
+     * @var Route[]
+     */
+    private static array $routes = [];
+
+    /**
+     * @var Route[][]
+     */
+    private static array $catchers = [
+        HttpNotFound::class => [],
+        HttpInternalServerError::class => []
+    ];
 
     /**
      * @param string $uri
@@ -114,18 +129,30 @@ final class Router {
         return $route;
     }
 
+    /**
+     * @param Route $route
+     * @return void
+     */
     public static function addRoute(Route &$route): void
     {
-        self::$routes[] = &$route;
+        self::$routes[$route->uri] = &$route;
     }
 
-    private static function resolveRoute(?string $uri = null, ?Methods $method = null): ?stdClass
+    /**
+     * @param array $routes
+     * @return stdClass|null
+     */
+    private static function resolveRoute(array $routes): ?stdClass
     {
         $routeMatches = static function (Route $route, string $requestUri, array|null &$matches) use (&$argNames): bool
         {
             $argNames = [];
 
-            $routeParts = explode("/", $route->uri);
+            $routeParts = explode("/", $route->uri);    
+
+            if (count(explode("/", $requestUri)) !== count($routeParts) && !str_ends_with($route->uri, "/(.*)")) {
+                return false;
+            }
 
             foreach ($routeParts as $key => $part) {
                 if (substr($part, 0, 1) === "{" && substr($part, -1) === "}") {
@@ -134,7 +161,6 @@ final class Router {
 
                     $argNames[] = $name;
                 }
-
                 
                 $routeParts[$key] = $part;
             }
@@ -146,15 +172,11 @@ final class Router {
             return boolval(preg_match_all('#^' . $pattern . '$#', $requestUri, $matches, PREG_OFFSET_CAPTURE));
         };
 
-        if ($uri === null) {
-            $uri = $_SERVER["REQUEST_URI"];
-        }
+        $uri = explode("?", $_SERVER["REQUEST_URI"])[0];
 
-        if ($method === null) {
-            $method = Methods::from($_SERVER["REQUEST_METHOD"]);
-        }
+        $method = Methods::from($_SERVER["REQUEST_METHOD"]);
 
-        foreach (self::$routes as $route) {
+        foreach ($routes as $route) {
             $matches = [];
 
             $isMatch = $routeMatches($route, $uri, $matches);
@@ -173,7 +195,7 @@ final class Router {
                     continue;
                 }
 
-                $name = $argNames[$argsIterator++];
+                $name = $argNames[$argsIterator++] ?? "";
 
                 if (isset($matches[$index + 1]) && isset($matches[$index + 1][0]) && is_array($matches[$index + 1][0])) {
                     if ($matches[$index + 1][0][1] > -1) {
@@ -191,25 +213,50 @@ final class Router {
         return $matchedRoute ?? null;
     }
 
-    public static function run(): void
+    /**
+     * @param class-string<Throwable> $exceptionToCatch
+     * @param string|Closure $controller
+     */
+    public static function catch(string $toCatch, string|Closure $controller, ?string $uri = "/(.*)"): Route
     {
-        $resolved = self::resolveRoute();
+        $catchable = array_keys(self::$catchers);
 
-        if ($resolved === null) {
-            throw new HttpNotFound($_SERVER["REQUEST_URI"]);
+        if (!in_array($toCatch, $catchable)) {
+            throw new \InvalidArgumentException("You can only catch the following exceptions: ".implode(", ", $catchable));
         }
         
-        /** @var Route $route */
-        $route = $resolved->route;
+        $route = new Route($uri, $controller, ...Methods::cases());
+        
+        self::$catchers[$toCatch][] = &$route;
 
-        foreach ($_FILES as $key => $file) {
-            $_FILES[$key] = new UploadedFile($file["tmp_name"], $file["size"], $file["error"], $file["type"]);
+        return $route;
+    }
+
+
+    public static function makeCatchable(string $toCatch): void
+    {
+        if (isset(self::$catchers[$toCatch])) {
+            return;
         }
 
-        $request = new ServerRequest($_SERVER, $_FILES, $_COOKIE, $_GET, $_POST, $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], getallheaders(), "php://input");
+        self::$catchers[$toCatch] = [];
+    }
 
-        $params = [$request, new Response, $resolved->args, $route, microtime(true)];
+    /**
+     * @param Route $route
+     * @param stdClass|null $args
+     * @param ServerRequestInterface $request
+     * @param mixed ...$extra
+     * @return ResponseInterface
+     */
+    private static function invokeRoute(Route $route, ?stdClass $args = null, ServerRequestInterface $request, mixed ...$extra): ResponseInterface
+    {
+        if ($args === null) {
+            $args = new stdClass;
+        }
 
+        $params = [$request, new Response, $args, $route, $extra];
+        
         if (!is_callable($route->controller)) {
             $response = $route->controller::handle(...$params);
         } else {
@@ -217,6 +264,43 @@ final class Router {
             $controller = $route->controller;
 
             $response = $controller(...$params);
+
+            $params = [$request, new Response, $args, $route, microtime(true)];
+        }
+
+        return $response;
+    }
+
+    public static function run(): void
+    {
+        $resolved = self::resolveRoute(self::$routes);
+
+        foreach ($_FILES as $key => $file) {
+            $_FILES[$key] = new UploadedFile($file["tmp_name"], $file["size"], $file["error"], $file["type"]);
+        }
+
+        $request = new ServerRequest($_SERVER, $_FILES, $_COOKIE, $_GET, $_POST, $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], getallheaders(), "php://input");
+
+        try {
+            if ($resolved === null) {
+                throw new HttpNotFound($request);
+            }
+
+            $response = self::invokeRoute($resolved->route, $resolved->args, $request);
+        } catch (Throwable $e) {
+            if (in_array($e::class, array_keys(self::$catchers))) {
+                $resolved = self::resolveRoute(self::$catchers[$e::class]);
+            } else {
+                $resolved = self::resolveRoute(self::$catchers[HttpInternalServerError::class]);
+            }
+
+            if ($resolved === null) {
+                throw $e;
+            }
+
+            $resolved->args->exception = $e;
+
+            $response = self::invokeRoute($resolved->route, $resolved->args, $request);
         }
         
         $emitter = new SapiEmitter();
