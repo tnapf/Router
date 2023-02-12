@@ -280,4 +280,3 @@ Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, Respon
 ```
 
 **Note: Catchers are treated just likes routes meaning then can have custom parameters as shown in [Basic Usage](#basic-usage)**
-````
