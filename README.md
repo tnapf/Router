@@ -179,7 +179,7 @@ class HomeController extends Controller {
     public static function handle(ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface
     {
         $res->getBody()->write("Welcome home!");
-		return $res;
+        return $res;
     }
 }
 ```
