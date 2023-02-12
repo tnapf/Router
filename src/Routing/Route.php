@@ -43,6 +43,42 @@ class Route {
         return $this;
     }
 
+    public function before(string|Closure ...$controllers): self
+    {
+        foreach ($controllers as $controller) {
+            if (!is_subclass_of($controller, MiddlewareController::class) && !is_callable($controller)) {
+                throw new \InvalidArgumentException("$controller must extend ".MiddlewareController::class);
+            }
+
+            $this->before[] = $controller;
+        }
+
+        return $this;
+    }
+
+    public function after(string|Closure ...$controllers): self
+    {
+        foreach ($controllers as $controller) {
+            if (!is_subclass_of($controller, MiddlewareController::class) && !is_callable($controller)) {
+                throw new \InvalidArgumentException("$controller must extend ".MiddlewareController::class);
+            }
+
+            $this->after[] = $controller;
+        }
+
+        return $this;
+    }
+
+    public function getBefores(): array
+    {
+        return $this->before;
+    }
+
+    public function getAfters(): array
+    {
+        return $this->after;
+    }
+
     public function acceptsMethod(Methods $method): bool
     {
         return in_array($method, $this->methods);
