@@ -226,11 +226,11 @@ final class Router {
 
                 $name = $argNames[$argsIterator++] ?? "";
 
-                if (isset($matches[$index + 1]) && isset($matches[$index + 1][0]) && is_array($matches[$index + 1][0])) {
-                    if ($matches[$index + 1][0][1] > -1) {
-                        $args->$name = trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
-                    }
-                }
+                // if (isset($matches[$index + 1]) && isset($matches[$index + 1][0]) && is_array($matches[$index + 1][0])) {
+                //     if ($matches[$index + 1][0][1] > -1) {
+                //         $args->$name = trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
+                //     }
+                // }
 
                 $args->$name = isset($match[0][0]) && $match[0][1] != -1 ? trim($match[0][0], '/') : null;
             }
