@@ -4,6 +4,8 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
+- [Tnapf/Router](#tnapfrouter)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
 - [Routing](#routing)
@@ -24,6 +26,7 @@ Totally Not Another PHP Framework's Route Component
   - [Custom Catchables](#custom-catchables)
 - [Middleware](#middleware)
   - [Before Middleware](#before-middleware)
+  - [After Middleware](#after-middleware)
 
 # Installation
 
@@ -324,10 +327,37 @@ Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseI
 
     $res->getBody()->seek(0, SEEK_END);
 
-    return $next($res);
+    return $next($res); // will go to the next part of middleware
 });
 ```
 
+*Note: If you don't want to proceed to the next part of middleware just return a `ResponseInterface` instead of passing response to the `$next` closure*
+
 You can also include a class string as the controller, just make sure that class extends `Tnapf\Router\Routing\MiddlewareController`
 
-*Special note about middleware, you can pass variables from beforeMiddleware to the main route or from the main route to afterMiddleware by supplying it as the second argument in the next closure.*
+*Special note about middleware, you can pass variables from beforeMiddleware to the main route or from the main route to afterMiddleware by supplying it as the second argument in the next closure. These variables will be added as an additional argument in the next piece of middleware*
+
+## After Middleware
+
+Adding after middleware is just like before middleware, just with a different method.
+
+```php
+Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, Closure $next): ResponseInterface {
+    $users = ["cmdstr", "realdiegopoptart"];
+
+    if (!in_array($args->username, $users)) {
+        throw new HttpNotFound($req);
+    }
+
+    $res = new TextResponse("Viewing {$args->username}'s ");
+
+    $res->getBody()->seek(0, SEEK_END);
+
+    return $next($res);
+})->setParameter("username", "[a-zA-Z_]+")->after(function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface
+{
+    $res->getBody()->write("profile");
+
+    return $res;
+});
+```
