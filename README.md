@@ -209,7 +209,7 @@ Router::get("/home", function (ServerRequestInterface $req, ResponseInterface $r
 
 ## Class Controller
 
-Create a class that extends `Tnapf\Router\Routing\Controller`
+Create a class with a static method to handle the route
 
 ```php
 class HomeController extends Controller {
@@ -221,10 +221,10 @@ class HomeController extends Controller {
 }
 ```
 
-Then insert the class string in for the controller argument instead of the anonymous function
+Then insert the class string into an array the first key is the class string and the second is the name of the method
 
 ```php
-Router::get("/home", HomeController::class);
+Router::get("/home", [HomeController::class, "handle"]);
 ```
 
 # Template Engine Integration
@@ -334,7 +334,7 @@ Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseI
 
 *Note: If you don't want to proceed to the next part of middleware just return a `ResponseInterface` instead of passing response to the `$next` closure*
 
-You can also include a class string as the controller, just make sure that class extends `Tnapf\Router\Routing\MiddlewareController`
+You can also include a class string just like the controller
 
 *Special note about middleware, you can pass variables from beforeMiddleware to the main route or from the main route to afterMiddleware by supplying it as the second argument in the next closure. These variables will be added as an additional argument in the next piece of middleware*
 
