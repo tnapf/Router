@@ -3,6 +3,8 @@
 namespace Tnapf\Router\Routing;
 
 use Closure;
+use InvalidArgumentException;
+use ReflectionMethod;
 use stdClass;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Router;
@@ -16,10 +18,10 @@ class Route {
 
    /**
     * @param string $uri
-    * @param class-string<Controller>|Closure $controller
+    * @param array|Closure $controller
     * @param Methods ...$methods
     */
-    public function __construct(string $uri, public readonly string|Closure $controller, Methods ...$methods) {
+    public function __construct(string $uri, public readonly array|Closure $controller, Methods ...$methods) {
         if (!str_starts_with($uri, "/")) {
             $uri = "/{$uri}";
         }
@@ -28,11 +30,31 @@ class Route {
 
         $this->parameters = new stdClass;
 
-        if (!is_subclass_of($controller, Controller::class) && !is_callable($controller)) {
-            throw new \InvalidArgumentException("$controller must extend ".Controller::class);
-        }
+        self::validateController($controller);
 
         $this->methods = $methods;
+    }
+
+
+    /**
+     * @param array|Closure $controller
+     * @return void
+     * 
+     * @throws InvalidArgumentException
+     */
+    private static function validateController(array|Closure $controller): void
+    {
+        if (!is_array($controller)) {
+            return;
+        }
+
+        $fullMethod = "{$controller[0]}::{$controller[1]}";
+        
+        if (!method_exists($controller[0], $controller[1])) {
+            throw new InvalidArgumentException("{$fullMethod} doesn't exist");
+        } else if (!(new ReflectionMethod($controller[0], $controller[1]))->isStatic()) {
+            throw new InvalidArgumentException("{$fullMethod} is not a static method");
+        }
     }
 
     public function getParameter(string $name): ?string
@@ -47,12 +69,10 @@ class Route {
         return $this;
     }
 
-    public function before(string|Closure ...$controllers): self
+    public function before(array|Closure ...$controllers): self
     {
         foreach ($controllers as $controller) {
-            if (!is_subclass_of($controller, MiddlewareController::class) && !is_callable($controller)) {
-                throw new \InvalidArgumentException("$controller must extend ".MiddlewareController::class);
-            }
+            self::validateController($controller);
 
             $this->before[] = $controller;
         }
@@ -60,12 +80,10 @@ class Route {
         return $this;
     }
 
-    public function after(string|Closure ...$controllers): self
+    public function after(array|Closure ...$controllers): self
     {
         foreach ($controllers as $controller) {
-            if (!is_subclass_of($controller, MiddlewareController::class) && !is_callable($controller)) {
-                throw new \InvalidArgumentException("$controller must extend ".MiddlewareController::class);
-            }
+            self::validateController($controller);
 
             $this->after[] = $controller;
         }
