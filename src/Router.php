@@ -14,7 +14,6 @@ use stdClass;
 use Throwable;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
-use Tnapf\Router\Routing\Controller;
 use Tnapf\Router\Routing\Route;
 
 final class Router {
@@ -38,10 +37,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function get(string $uri, string|Closure $controller): Route
+    public static function get(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, Methods::GET);
         
@@ -52,10 +51,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function post(string $uri, string|Closure $controller): Route
+    public static function post(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, Methods::POST);
         
@@ -66,10 +65,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function put(string $uri, string|Closure $controller): Route
+    public static function put(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, Methods::PUT);
         
@@ -80,10 +79,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function delete(string $uri, string|Closure $controller): Route
+    public static function delete(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, Methods::DELETE);
         
@@ -94,10 +93,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function options(string $uri, string|Closure $controller): Route
+    public static function options(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, Methods::OPTIONS);
         
@@ -108,10 +107,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function head(string $uri, string|Closure $controller): Route
+    public static function head(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, Methods::HEAD);
         
@@ -122,10 +121,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param class-string<Controller> $controller
+     * @param array|Closure $controller
      * @return Route
      */
-    public static function all(string $uri, string|Closure $controller): Route
+    public static function all(string $uri, array|Closure $controller): Route
     {
         $route = new Route($uri, $controller, ...Methods::cases());
         
@@ -244,9 +243,9 @@ final class Router {
 
     /**
      * @param class-string<Throwable> $exceptionToCatch
-     * @param string|Closure $controller
+     * @param array|Closure $controller
      */
-    public static function catch(string $toCatch, string|Closure $controller, ?string $uri = "/(.*)"): Route
+    public static function catch(string $toCatch, array|Closure $controller, ?string $uri = "/(.*)"): Route
     {
         $catchable = array_keys(self::$catchers);
 
@@ -319,7 +318,7 @@ final class Router {
                                 $params = array_merge($params, $extra);
                 
                                 if (!is_callable($controller)) {
-                                    $response = $controller::handle(...$params);
+                                    $response = call_user_func("{$controller[0]}::{$controller[1]}", ...$params);
                                 } else {
                                     $response = $controller(...$params);
                                 }
@@ -341,7 +340,7 @@ final class Router {
                 $params = array_merge($params, $extra);
 
                 if (!is_callable($controller)) {
-                    $response = $controller::handle(...$params);
+                    $response = call_user_func("{$controller[0]}::{$controller[1]}", ...$params);
                 } else {
                     $response = $controller(...$params);
                 }
