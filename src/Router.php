@@ -316,14 +316,10 @@ final class Router {
                                 $params[1] = $response;
                 
                                 $params = array_merge($params, $extra);
-                
-                                if (!is_callable($controller)) {
-                                    $response = call_user_func("{$controller[0]}::{$controller[1]}", ...$params);
-                                } else {
-                                    $response = $controller(...$params);
-                                }
-                
-                                return $response;
+
+                                return !is_callable($controller)
+                                    ? call_user_func("{$controller[0]}::{$controller[1]}", ...$params)
+                                    : $controller(...$params);
                             };
                         }
 
