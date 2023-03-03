@@ -25,7 +25,7 @@ final class Router {
     /**
      * @var array
      */
-    private static array $mount;
+    private static array $mount = [];
 
     /**
      * @var Route[][]
@@ -154,11 +154,19 @@ final class Router {
 
     public static function mount(string $baseUri, Closure $mounting, array $beforeMiddleware = [], array $afterMiddleware = []): void
     {
-        self::$mount = compact("baseUri", "beforeMiddleware", "afterMiddleware");
+        $oldMount = self::$mount;
+
+        if (empty(self::$mount['baseUri'])) {
+            self::$mount = compact("baseUri", "beforeMiddleware", "afterMiddleware");
+        } else {
+            self::$mount['baseUri'] .= $baseUri;
+            self::$mount['beforeMiddleware'] = array_merge(self::$mount['beforeMiddleware'], $beforeMiddleware);
+            self::$mount['afterMiddleware'] = array_merge(self::$mount['afterMiddleware'], $afterMiddleware);
+        }
 
         call_user_func($mounting);
 
-        self::$mount = [];
+        self::$mount = $oldMount;
     }
 
     public static function getBaseUri(): string
