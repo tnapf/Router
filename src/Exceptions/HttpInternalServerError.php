@@ -10,6 +10,5 @@ class HttpInternalServerError extends Exception {
     public function __construct(public readonly ServerRequestInterface $request, public readonly Throwable $exception)
     {
         parent::__construct("{$request->getRequestTarget()} has thrown {$exception->getMessage()}", 500);
-
     }
 }
