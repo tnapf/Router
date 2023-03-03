@@ -8,8 +8,7 @@ abstract class Code {
     public string $code;
     public string $phrase;
     public string $description;
-    public string $spec_title;
-    public string $spec_href;
+    public string $mdn;
 }
 
 echo TAB.'private static array $catchers = ['.PHP_EOL;
@@ -17,7 +16,7 @@ echo TAB.'private static array $catchers = ['.PHP_EOL;
 foreach ($codes as $key => $code) {
     /** @var Code $code */
 
-    if ((!str_starts_with($code->code, "4") && !str_starts_with($code->code, "5")) || str_contains($code->code, "x")) {
+    if ((!str_starts_with($code->code, "4") && !str_starts_with($code->code, "5"))) {
         continue;
     }
 
@@ -25,9 +24,6 @@ foreach ($codes as $key => $code) {
 
     $namespace = "Tnapf\Router\Exceptions";
     $className = "Http".str_replace(" ", "", $parsedPhrase);
-
-    $code->description = ucfirst(str_replace('"', "", $code->description));
-    $code->spec_href = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/{$code->code}";
 
     ob_start(); 
     echo "<?php\n"; ?>
@@ -38,7 +34,7 @@ class <?= $className ?> extends HttpException {
     public const CODE = <?= $code->code ?>;
     public const PHRASE = "<?= $code->phrase ?>";
     public const DESCRIPTION = "<?= $code->description ?>";
-    public const HREF = "<?= $code->spec_href ?>";
+    public const HREF = "<?= $code->mdn ?>";
 }
 
 <?php 
