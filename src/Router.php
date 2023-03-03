@@ -9,14 +9,18 @@ use HttpSoft\Message\ServerRequest;
 use HttpSoft\Message\UploadedFile;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Tnapf\Router\Exceptions\HttpNotFound;
 use stdClass;
 use Throwable;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Exceptions\HttpException;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Routing\Route;
 
 final class Router {
+    public const EMIT_EMPTY_RESPONSE = 1;
+    public const EMIT_HTML_RESPONSE = 2;
+    public const EMIT_JSON_RESPONSE = 3;
+
     /**
      * @var Route[]
      */
@@ -28,11 +32,50 @@ final class Router {
     private static array $mount = [];
 
     /**
+     * @var int The type of emit
+     */
+    private static int $emitHttpExceptions = 0;
+
+    /**
      * @var Route[][]
      */
     private static array $catchers = [
-        HttpNotFound::class => [],
-        HttpInternalServerError::class => []
+        Exceptions\HttpBadRequest::class => [],
+        Exceptions\HttpUnauthorized::class => [],
+        Exceptions\HttpPaymentRequired::class => [],
+        Exceptions\HttpForbidden::class => [],
+        Exceptions\HttpNotFound::class => [],
+        Exceptions\HttpMethodNotAllowed::class => [],
+        Exceptions\HttpNotAcceptable::class => [],
+        Exceptions\HttpProxyAuthenticationRequired::class => [],
+        Exceptions\HttpRequestTimeout::class => [],
+        Exceptions\HttpConflict::class => [],
+        Exceptions\HttpGone::class => [],
+        Exceptions\HttpLengthRequired::class => [],
+        Exceptions\HttpPreconditionFailed::class => [],
+        Exceptions\HttpPayloadTooLarge::class => [],
+        Exceptions\HttpURITooLong::class => [],
+        Exceptions\HttpUnsupportedMediaType::class => [],
+        Exceptions\HttpRangeNotSatisfiable::class => [],
+        Exceptions\HttpExpectationFailed::class => [],
+        Exceptions\HttpImateapot::class => [],
+        Exceptions\HttpUpgradeRequired::class => [],
+        Exceptions\HttpUnprocessableEntity::class => [],
+        Exceptions\HttpLocked::class => [],
+        Exceptions\HttpFailedDependency::class => [],
+        Exceptions\HttpPreconditionRequired::class => [],
+        Exceptions\HttpTooManyRequests::class => [],
+        Exceptions\HttpRequestHeaderFieldsTooLarge::class => [],
+        Exceptions\HttpUnavailableForLegalReasons::class => [],
+        Exceptions\HttpInternalServerError::class => [],
+        Exceptions\HttpNotImplemented::class => [],
+        Exceptions\HttpBadGateway::class => [],
+        Exceptions\HttpServiceUnavailable::class => [],
+        Exceptions\HttpGatewayTimeout::class => [],
+        Exceptions\HttpHTTPVersionNotSupported::class => [],
+        Exceptions\HttpVariantAlsoNegotiates::class => [],
+        Exceptions\HttpInsufficientStorage::class => [],
+        Exceptions\HttpNetworkAuthenticationRequired::class => []
     ];
 
     /**
@@ -140,11 +183,11 @@ final class Router {
     public static function addRoute(Route &$route): void
     {
         if (isset(self::$mount)) {
-            foreach (self::$mount["beforeMiddleware"] as $before) {
+            foreach (self::$mount["beforeMiddleware"] ?? [] as $before) {
                 $route->before($before);
             }
             
-            foreach (self::$mount["afterMiddleware"] as $after) {
+            foreach (self::$mount["afterMiddleware"] ?? [] as $after) {
                 $route->before($after);
             }
         }
@@ -232,12 +275,6 @@ final class Router {
                 }
 
                 $name = $argNames[$argsIterator++] ?? "";
-
-                // if (isset($matches[$index + 1]) && isset($matches[$index + 1][0]) && is_array($matches[$index + 1][0])) {
-                //     if ($matches[$index + 1][0][1] > -1) {
-                //         $args->$name = trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
-                //     }
-                // }
 
                 $args->$name = isset($match[0][0]) && $match[0][1] != -1 ? trim($match[0][0], '/') : null;
             }
@@ -352,6 +389,14 @@ final class Router {
         return $nexts[0](new Response);
     }
 
+    /**
+     * 
+     */
+    public static function emitHttpExceptions(int $type): void
+    {
+        self::$emitHttpExceptions = $type;
+    }
+
     public static function run(): void
     {
         $sortByLength = function (Route $a, Route $b) {
@@ -374,7 +419,7 @@ final class Router {
 
         try {
             if ($resolved === null) {
-                throw new HttpNotFound($request);
+                throw new Exceptions\HttpNotFound($request);
             }
 
             $response = self::invokeRoute($resolved->route, $resolved->args, $request);
@@ -386,15 +431,39 @@ final class Router {
             }
 
             if ($resolved === null) {
-                throw $e;
+                if (!self::$emitHttpExceptions) {
+                    throw $e;
+                } else {
+                    if (!is_subclass_of($e, HttpException::class)) {
+                        $class = HttpInternalServerError::class;
+                    } else {
+                        $class = $e::class;
+                    }
+
+                    switch (self::$emitHttpExceptions) {
+                        case 1:
+                            $method = "buildEmptyResponse";
+                            break;
+                        case 2:
+                            $method = "buildHtmlResponse";
+                            break;
+                        case 3: 
+                            $method = "buildJsonResponse";
+                            break;
+                        default:
+                            $method = "buildEmptyResponse";
+                    }
+
+                    $response = call_user_func("$class::$method");
+                }
             }
 
-            $resolved->args->exception = $e;
-
-            $response = self::invokeRoute($resolved->route, $resolved->args, $request);
+            if (!isset($response)) {
+                $resolved->args->exception = $e;
+                $response = self::invokeRoute($resolved->route, $resolved->args, $request);
+            }
         }
         
-        $emitter = new SapiEmitter();
-        $emitter->emit($response);
+        (new SapiEmitter())->emit($response);
     }
 }
