@@ -3,3 +3,5 @@
 
 # VSCode 
 .vscode/*
+
+tools/HttpExceptionGeneration/HttpExceptions.md
