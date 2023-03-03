@@ -4,8 +4,6 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
-- [Tnapf/Router](#tnapfrouter)
-- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
 - [Routing](#routing)
