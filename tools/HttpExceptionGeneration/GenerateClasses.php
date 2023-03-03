@@ -39,7 +39,7 @@ class <?= $className ?> extends HttpException {
 
 <?php 
 
-file_put_contents("../$className.php", ob_get_clean());
+file_put_contents("../src/Exceptions/$className.php", ob_get_clean());
 
 
 
