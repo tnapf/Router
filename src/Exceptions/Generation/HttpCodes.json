@@ -1,145 +1,5 @@
 [
     {
-        "code": "1xx",
-        "phrase": "**Informational**",
-        "description": "\"indicates an interim response for communicating connection status or request progress prior to completing the requested action and sending a final response.\" ~ [sure](http://www.urbandictionary.com/define.php?term=sure)",
-        "spec_title": "RFC7231#6.2",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.2"
-    },
-    {
-        "code": "100",
-        "phrase": "Continue",
-        "description": "\"indicates that the initial part of a request has been received and has not yet been rejected by the server.\"",
-        "spec_title": "RFC7231#6.2.1",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.2.1"
-    },
-    {
-        "code": "101",
-        "phrase": "Switching Protocols",
-        "description": "\"indicates that the server understands and is willing to comply with the client's request, via the Upgrade header field, for a change in the application protocol being used on this connection.\"",
-        "spec_title": "RFC7231#6.2.2",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.2.2"
-    },
-    {
-        "code": "2xx",
-        "phrase": "**Successful**",
-        "description": "\"indicates that the client's request was successfully received, understood, and accepted.\" ~ [cool](https://twitter.com/DanaDanger/status/183316183494311936)",
-        "spec_title": "RFC7231#6.3",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3"
-    },
-    {
-        "code": "200",
-        "phrase": "OK",
-        "description": "\"indicates that the request has succeeded.\"",
-        "spec_title": "RFC7231#6.3.1",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3.1"
-    },
-    {
-        "code": "201",
-        "phrase": "Created",
-        "description": "\"indicates that the request has been fulfilled and has resulted in one or more new resources being created.\"",
-        "spec_title": "RFC7231#6.3.2",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3.2"
-    },
-    {
-        "code": "202",
-        "phrase": "Accepted",
-        "description": "\"indicates that the request has been accepted for processing, but the processing has not been completed.\"",
-        "spec_title": "RFC7231#6.3.3",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3.3"
-    },
-    {
-        "code": "203",
-        "phrase": "Non-Authoritative Information",
-        "description": "\"indicates that the request was successful but the enclosed payload has been modified from that of the origin server's 200 (OK) response by a transforming proxy.\"",
-        "spec_title": "RFC7231#6.3.4",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3.4"
-    },
-    {
-        "code": "204",
-        "phrase": "No Content",
-        "description": "\"indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response payload body.\"",
-        "spec_title": "RFC7231#6.3.5",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3.5"
-    },
-    {
-        "code": "205",
-        "phrase": "Reset Content",
-        "description": "\"indicates that the server has fulfilled the request and desires that the user agent reset the \"document view\", which caused the request to be sent, to its original state as received from the origin server.\"",
-        "spec_title": "RFC7231#6.3.6",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.3.6"
-    },
-    {
-        "code": "206",
-        "phrase": "Partial Content",
-        "description": "\"indicates that the server is successfully fulfilling a range request for the target resource by transferring one or more parts of the selected representation that correspond to the satisfiable ranges found in the requests's Range header field.\"",
-        "spec_title": "RFC7233#4.1",
-        "spec_href": "https://tools.ietf.org/html/rfc7233#section-4.1"
-    },
-    {
-        "code": "3xx",
-        "phrase": "**Redirection**",
-        "description": "\"indicates that further action needs to be taken by the user agent in order to fulfill the request.\" ~ [ask that dude over there](https://twitter.com/DanaDanger/status/183316183494311936)",
-        "spec_title": "RFC7231#6.4",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4"
-    },
-    {
-        "code": "300",
-        "phrase": "Multiple Choices",
-        "description": "\"indicates that the target resource has more than one representation, each with its own more specific identifier, and information about the alternatives is being provided so that the user (or user agent) can select a preferred representation by redirecting its request to one or more of those identifiers.\"",
-        "spec_title": "RFC7231#6.4.1",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4.1"
-    },
-    {
-        "code": "301",
-        "phrase": "Moved Permanently",
-        "description": "\"indicates that the target resource has been assigned a new permanent URI and any future references to this resource ought to use one of the enclosed URIs.\"",
-        "spec_title": "RFC7231#6.4.2",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4.2"
-    },
-    {
-        "code": "302",
-        "phrase": "Found",
-        "description": "\"indicates that the target resource resides temporarily under a different URI.\"",
-        "spec_title": "RFC7231#6.4.3",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4.3"
-    },
-    {
-        "code": "303",
-        "phrase": "See Other",
-        "description": "\"indicates that the server is redirecting the user agent to a different resource, as indicated by a URI in the Location header field, that is intended to provide an indirect response to the original request.\"",
-        "spec_title": "RFC7231#6.4.4",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4.4"
-    },
-    {
-        "code": "304",
-        "phrase": "Not Modified",
-        "description": "\"indicates that a conditional GET request has been received and would have resulted in a 200 (OK) response if it were not for the fact that the condition has evaluated to false.\"",
-        "spec_title": "RFC7232#4.1",
-        "spec_href": "https://tools.ietf.org/html/rfc7232#section-4.1"
-    },
-    {
-        "code": "305",
-        "phrase": "Use Proxy",
-        "description": "*deprecated*",
-        "spec_title": "RFC7231#6.4.5",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4.5"
-    },
-    {
-        "code": "307",
-        "phrase": "Temporary Redirect",
-        "description": "\"indicates that the target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.\"",
-        "spec_title": "RFC7231#6.4.7",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.4.7"
-    },
-    {
-        "code": "4xx",
-        "phrase": "**Client Error**",
-        "description": "\"indicates that the client seems to have erred.\" ~ [*you* fucked up](https://twitter.com/DanaDanger/status/183316183494311936)",
-        "spec_title": "RFC7231#6.5",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.5"
-    },
-    {
         "code": "400",
         "phrase": "Bad Request",
         "description": "\"indicates that the server cannot or will not process the request because the received syntax is invalid, nonsensical, or exceeds some limitation on what the server is willing to process.\"",
@@ -280,83 +140,6 @@
         "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.5.15"
     },
     {
-        "code": "5xx",
-        "phrase": "**Server Error**",
-        "description": "\"indicates that the server is aware that it has erred or is incapable of performing the requested method.\" ~ [*we* fucked up](https://twitter.com/DanaDanger/status/183316183494311936)",
-        "spec_title": "RFC7231#6.6",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6"
-    },
-    {
-        "code": "500",
-        "phrase": "Internal Server Error",
-        "description": "\"indicates that the server encountered an unexpected condition that prevented it from fulfilling the request.\"",
-        "spec_title": "RFC7231#6.6.1",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.1"
-    },
-    {
-        "code": "501",
-        "phrase": "Not Implemented",
-        "description": "\"indicates that the server does not support the functionality required to fulfill the request.\"",
-        "spec_title": "RFC7231#6.6.2",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.2"
-    },
-    {
-        "code": "502",
-        "phrase": "Bad Gateway",
-        "description": "\"indicates that the server, while acting as a gateway or proxy, received an invalid response from an inbound server it accessed while attempting to fulfill the request.\"",
-        "spec_title": "RFC7231#6.6.3",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.3"
-    },
-    {
-        "code": "503",
-        "phrase": "Service Unavailable",
-        "description": "\"indicates that the server is currently unable to handle the request due to a temporary overload or scheduled maintenance, which will likely be alleviated after some delay.\"",
-        "spec_title": "RFC7231#6.6.4",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.4"
-    },
-    {
-        "code": "504",
-        "phrase": "Gateway Time-out",
-        "description": "\"indicates that the server, while acting as a gateway or proxy, did not receive a timely response from an upstream server it needed to access in order to complete the request.\"",
-        "spec_title": "RFC7231#6.6.5",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.5"
-    },
-    {
-        "code": "505",
-        "phrase": "HTTP Version Not Supported",
-        "description": "\"indicates that the server does not support, or refuses to support, the protocol version that was used in the request message.\"",
-        "spec_title": "RFC7231#6.6.6",
-        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.6"
-    },
-    {
-        "code": "102",
-        "phrase": "Processing",
-        "description": "\"is an interim response used to inform the client that the server has accepted the complete request, but has not yet completed it.\"",
-        "spec_title": "RFC5218#10.1",
-        "spec_href": "https://tools.ietf.org/html/rfc2518#section-10.1"
-    },
-    {
-        "code": "207",
-        "phrase": "Multi-Status",
-        "description": "\"provides status for multiple independent operations.\"",
-        "spec_title": "RFC5218#10.2",
-        "spec_href": "https://tools.ietf.org/html/rfc2518#section-10.2"
-    },
-    {
-        "code": "226",
-        "phrase": "IM Used",
-        "description": "\"The server has fulfilled a GET request for the resource, and the response is a representation of the result of one or more instance-manipulations applied to the current instance.\"",
-        "spec_title": "RFC3229#10.4.1",
-        "spec_href": "https://tools.ietf.org/html/rfc3229#section-10.4.1"
-    },
-    {
-        "code": "308",
-        "phrase": "Permanent Redirect",
-        "description": "\"The target resource has been assigned a new permanent URI and any future references to this resource outght to use one of the enclosed URIs. [...] This status code is similar to 301 Moved Permanently (Section 7.3.2 of rfc7231), except that it does not allow rewriting the request method from POST to GET.\"",
-        "spec_title": "RFC7538",
-        "spec_href": "https://tools.ietf.org/html/rfc7538"
-    },
-    {
         "code": "422",
         "phrase": "Unprocessable Entity",
         "description": "\"means the server understands the content type of the request entity (hence a 415(Unsupported Media Type) status code is inappropriate), and the syntax of the request entity is correct (thus a 400 (Bad Request) status code is inappropriate) but was unable to process the contained instructions.\"",
@@ -406,6 +189,48 @@
         "spec_href": "https://tools.ietf.org/html/draft-ietf-httpbis-legally-restricted-status"
     },
     {
+        "code": "500",
+        "phrase": "Internal Server Error",
+        "description": "\"indicates that the server encountered an unexpected condition that prevented it from fulfilling the request.\"",
+        "spec_title": "RFC7231#6.6.1",
+        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+    },
+    {
+        "code": "501",
+        "phrase": "Not Implemented",
+        "description": "\"indicates that the server does not support the functionality required to fulfill the request.\"",
+        "spec_title": "RFC7231#6.6.2",
+        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.2"
+    },
+    {
+        "code": "502",
+        "phrase": "Bad Gateway",
+        "description": "\"indicates that the server, while acting as a gateway or proxy, received an invalid response from an inbound server it accessed while attempting to fulfill the request.\"",
+        "spec_title": "RFC7231#6.6.3",
+        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.3"
+    },
+    {
+        "code": "503",
+        "phrase": "Service Unavailable",
+        "description": "\"indicates that the server is currently unable to handle the request due to a temporary overload or scheduled maintenance, which will likely be alleviated after some delay.\"",
+        "spec_title": "RFC7231#6.6.4",
+        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.4"
+    },
+    {
+        "code": "504",
+        "phrase": "Gateway Time-out",
+        "description": "\"indicates that the server, while acting as a gateway or proxy, did not receive a timely response from an upstream server it needed to access in order to complete the request.\"",
+        "spec_title": "RFC7231#6.6.5",
+        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.5"
+    },
+    {
+        "code": "505",
+        "phrase": "HTTP Version Not Supported",
+        "description": "\"indicates that the server does not support, or refuses to support, the protocol version that was used in the request message.\"",
+        "spec_title": "RFC7231#6.6.6",
+        "spec_href": "https://tools.ietf.org/html/rfc7231#section-6.6.6"
+    },
+    {
         "code": "506",
         "phrase": "Variant Also Negotiates",
         "description": "\"indicates that the server has an internal configuration error: the chosen variant resource is configured to engage in transparent content negotiation itself, and is therefore not a proper end point in the negotiation process.\"",
@@ -425,12 +250,5 @@
         "description": "\"indicates that the client needs to authenticate to gain network access.\"",
         "spec_title": "RFC6585#6",
         "spec_href": "https://tools.ietf.org/html/rfc6585#section-6"
-    },
-    {
-        "code": "7xx",
-        "phrase": "**Developer Error**",
-        "description": "[err](http://www.urbandictionary.com/define.php?term=err)",
-        "spec_title": "7xx-rfc",
-        "spec_href": "http://documentup.com/joho/7XX-rfc"
     }
 ]
