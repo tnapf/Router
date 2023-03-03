@@ -377,6 +377,21 @@ Router::mount("/app", function () {
         return new TextResponse("Looking at channelId {$args->channel} as UserId $userId");
     })->setParameter("channel", "\d+");
 
+    // You can now mount inside of a mount
+    Router::mount("/api", function () {
+        Router::get("/channel/{channel}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, int $userId) {
+            return new JsonResponse(["Looking at channelId {$args->channel} as UserId $userId"]);
+        })->setParameter("channel", "\d+");
+
+        Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
+            return new JsonResponse(["Channel id {$args->channel} is invalid"]);
+        }, "/channel/{channel}")->setParameter("channel", "[a-zA-Z]+");
+
+        Router::catch(HttpNotFound::class, function () {
+            return new JsonResponse(["Api Endpoint Not Found"]);
+        });
+    }, [ /* added to the end of already established before/after middleware */ ]);
+
     Router::catch(HttpNotFound::class, function () {
         return new TextResponse("App Route Not Found");
     });
