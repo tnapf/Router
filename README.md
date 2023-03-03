@@ -285,7 +285,7 @@ By default, you can only catch the exceptions shown below but let's say you make
 Router::makeCatchable(UserNotFound::class)
 ```
 
-and then catch it as it were a regular HttpException.
+and then catch it like a regular HttpException.
 
 ## Available HttpExceptions
 
