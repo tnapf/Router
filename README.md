@@ -20,10 +20,10 @@ Totally Not Another PHP Framework's Route Component
 - [Template Engine Integration](#template-engine-integration)
 - [Responding to requests](#responding-to-requests)
 - [Catchable Routes](#catchable-routes)
-  - [500 Catcher](#500-catcher)
-  - [404 Catcher](#404-catcher)
+  - [Catching](#catching)
   - [Specific URI's](#specific-uris)
   - [Custom Catchables](#custom-catchables)
+  - [Available HttpExceptions](#available-httpexceptions)
 - [Middleware](#middleware)
   - [Before Middleware](#before-middleware)
   - [After Middleware](#after-middleware)
@@ -259,24 +259,14 @@ $response = new HttpSoft\Response\EmptyResponse();
 # Catchable Routes
 Catchable routes are routes that are only invoked when exceptions are thrown while handling a request. To create a catchable route you can do the following...
 
-## 500 Catcher
+## Catching
 
 ```php
-Router::catch(HttpInternalServerError::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
+Router::catch(HttpException::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
     return new TextResponse("An internal server error has occurred");
 });
 ```
-
-This will catch all exceptions thrown in any route and return a basic response. Also, note that the exception thrown will be stored in `$args->exception`
-
-
-## 404 Catcher
-
-```php
-Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
-    return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
-});
-```
+*Note that `$args->exception` will be the exception throw*
 
 ## Specific URI's
 
@@ -285,19 +275,58 @@ Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, Respon
     return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
 }, "/users/{username}");
 ```
+**Note: Catchers are treated just like routes meaning they can have custom parameters as shown in [Basic Usage](#basic-usage)**
 
 ## Custom Catchables
 
-By default, you can only catch HttpNotFound and HttpInternalServerError (every other exception) but let's say you make a custom exception named UserNotFound you can use...
+By default, you can only catch the exceptions shown below but let's say you make a custom exception named `UserNotFound` and want to have a custom response emitted when it's thrown...well you can...
 
 ```php
 Router::makeCatchable(UserNotFound::class)
 ```
 
-Now you can catch UserNotFound
+and then catch it as it were a regular HttpException.
 
+## Available HttpExceptions
 
-**Note: Catchers are treated just like routes meaning they can have custom parameters as shown in [Basic Usage](#basic-usage)**
+| Code | Phrase | ClassName |
+|------|--------|-----------|
+|400|[Bad Request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400)|[HttpBadRequest](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpBadRequest.php)
+|401|[Unauthorized](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401)|[HttpUnauthorized](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUnauthorized.php)
+|402|[Payment Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402)|[HttpPaymentRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpPaymentRequired.php)
+|403|[Forbidden](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403)|[HttpForbidden](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpForbidden.php)
+|404|[Not Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404)|[HttpNotFound](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpNotFound.php)
+|405|[Method Not Allowed](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405)|[HttpMethodNotAllowed](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpMethodNotAllowed.php)
+|406|[Not Acceptable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406)|[HttpNotAcceptable](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpNotAcceptable.php)
+|407|[Proxy Authentication Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/407)|[HttpProxyAuthenticationRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpProxyAuthenticationRequired.php)
+|408|[Request Timeout](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408)|[HttpRequestTimeout](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpRequestTimeout.php)
+|409|[Conflict](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409)|[HttpConflict](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpConflict.php)
+|410|[Gone](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410)|[HttpGone](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpGone.php)
+|411|[Length Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/411)|[HttpLengthRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpLengthRequired.php)
+|412|[Precondition Failed](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/412)|[HttpPreconditionFailed](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpPreconditionFailed.php)
+|413|[Payload Too Large](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/413)|[HttpPayloadTooLarge](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpPayloadTooLarge.php)
+|414|[URI Too Long](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/414)|[HttpURITooLong](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpURITooLong.php)
+|415|[Unsupported Media Type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415)|[HttpUnsupportedMediaType](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUnsupportedMediaType.php)
+|416|[Range Not Satisfiable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/416)|[HttpRangeNotSatisfiable](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpRangeNotSatisfiable.php)
+|417|[Expectation Failed](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417)|[HttpExpectationFailed](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpExpectationFailed.php)
+|418|[I'm a teapot](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)|[HttpImateapot](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpImateapot.php)
+|422|[Unprocessable Entity](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422)|[HttpUnprocessableEntity](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUnprocessableEntity.php)
+|423|[Locked](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/423)|[HttpLocked](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpLocked.php)
+|424|[Failed Dependency](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/424)|[HttpFailedDependency](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpFailedDependency.php)
+|426|[Upgrade Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/426)|[HttpUpgradeRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUpgradeRequired.php)
+|428|[Precondition Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/428)|[HttpPreconditionRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpPreconditionRequired.php)
+|429|[Too Many Requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429)|[HttpTooManyRequests](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpTooManyRequests.php)
+|431|[Request Header Fields Too Large](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/431)|[HttpRequestHeaderFieldsTooLarge](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpRequestHeaderFieldsTooLarge.php)
+|451|[Unavailable For Legal Reasons](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/451)|[HttpUnavailableForLegalReasons](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUnavailableForLegalReasons.php)
+|500|[Internal Server Error](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500)|[HttpInternalServerError](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpInternalServerError.php)
+|501|[Not Implemented](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/501)|[HttpNotImplemented](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpNotImplemented.php)
+|502|[Bad Gateway](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502)|[HttpBadGateway](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpBadGateway.php)
+|503|[Service Unavailable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503)|[HttpServiceUnavailable](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpServiceUnavailable.php)
+|504|[Gateway Time-out](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504)|[HttpGatewayTimeout](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpGatewayTimeout.php)
+|505|[HTTP Version Not Supported](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/505)|[HttpHTTPVersionNotSupported](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpHTTPVersionNotSupported.php)
+|506|[Variant Also Negotiates](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/506)|[HttpVariantAlsoNegotiates](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpVariantAlsoNegotiates.php)
+|507|[Insufficient Storage](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/507)|[HttpInsufficientStorage](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpInsufficientStorage.php)
+|511|[Network Authentication Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/511)|[HttpNetworkAuthenticationRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpNetworkAuthenticationRequired.php)
 
 # Middleware
 
