@@ -33,7 +33,7 @@ abstract class HttpException extends \Exception {
         <!DOCTYPE HTML>
         <html lang='en'>
         <head>
-            <title>$code - $phrase</title>
+            <title>{$code} - {$phrase}</title>
         </head>
         <body>
             <style>
@@ -55,9 +55,9 @@ abstract class HttpException extends \Exception {
                 }
             </style>
             <div>
-                <h1>$code - <a href='$href'>$phrase</a></h1>
+                <h1>{$code} - <a href='{$href}'>{$phrase}</a></h1>
                 <hr>
-                <p>$description</p>
+                <p>{$description}</p>
             </div>
         </body>
         </html>
