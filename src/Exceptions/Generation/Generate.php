@@ -2,7 +2,9 @@
 
 $codes = json_decode(file_get_contents("./HttpCodes.json"));
 
-class Code {
+define("TAB", "    ");
+
+abstract class Code {
     public string $code;
     public string $phrase;
     public string $description;
@@ -10,7 +12,9 @@ class Code {
     public string $spec_href;
 }
 
-foreach ($codes as $code) {
+echo TAB.'private static array $catchers = ['.PHP_EOL;
+
+foreach ($codes as $key => $code) {
     /** @var Code $code */
 
     if ((!str_starts_with($code->code, "4") && !str_starts_with($code->code, "5")) || str_contains($code->code, "x")) {
@@ -19,6 +23,7 @@ foreach ($codes as $code) {
 
     $parsedPhrase = preg_replace("/[^a-zA-Z]/", "", $code->phrase);
 
+    $namespace = "Tnapf\Router\Exceptions";
     $className = "Http".str_replace(" ", "", $parsedPhrase);
 
     $code->description = ucfirst(str_replace('"', "", $code->description));
@@ -27,9 +32,9 @@ foreach ($codes as $code) {
     ob_start(); 
     echo "<?php\n"; ?>
 
-namespace Tnapf\Router\Exceptions;
+namespace <?= $namespace ?>;
 
-class <?= $className ?>Exception extends HttpException {
+class <?= $className ?> extends HttpException {
     public const CODE = <?= $code->code ?>;
     public const PHRASE = "<?= $code->phrase ?>";
     public const DESCRIPTION = "<?= $code->description ?>";
@@ -39,4 +44,14 @@ class <?= $className ?>Exception extends HttpException {
 <?php 
 
 file_put_contents("../$className.php", ob_get_clean());
+
+
+
+echo TAB.TAB."Exceptions\\$className::class => []";
+echo ($key !== count($codes)-1) ? ",\n" : "\n";
+
 }
+
+echo TAB."];";
+
+echo "\nBE SURE TO UPDATE 'src/Router.php:32'";
