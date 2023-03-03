@@ -20,10 +20,10 @@ foreach ($codes as $key => $code) {
         continue;
     }
 
-    $parsedPhrase = preg_replace("/[^a-zA-Z]/", "", $code->phrase);
-
     $namespace = "Tnapf\Router\Exceptions";
-    $className = "Http".str_replace(" ", "", $parsedPhrase);
+    
+    $parsedPhrase = preg_replace("/[^a-zA-Z]/", "", $code->phrase);
+    $className = "Http".$parsedPhrase;
 
     ob_start(); 
     echo "<?php\n"; ?>
