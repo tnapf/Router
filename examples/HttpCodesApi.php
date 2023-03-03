@@ -12,7 +12,7 @@ use Tnapf\Router\Router;
 
 function getCodes(): array
 {
-    return json_decode(file_get_contents("./src/Exceptions/Generation/HttpCodes.json"));
+    return json_decode(file_get_contents("../src/Exceptions/Generation/HttpCodes.json"));
 }
 
 Router::get("/{type}/{code}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
@@ -47,7 +47,7 @@ Router::get("/{type}/{code}", function (ServerRequestInterface $req, ResponseInt
                         }
                     </style>
                     <div>
-                        <h1>{$code->code} - <a href='{$code->href}'>{$code->phrase}</a></h1>
+                        <h1>{$code->code} - <a href='{$code->mdn}'>{$code->phrase}</a></h1>
                         <hr>
                         <p>{$code->description}</p>
                     </div>
