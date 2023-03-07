@@ -5,8 +5,7 @@ namespace Tnapf\Router;
 use Closure;
 use HttpSoft\Emitter\SapiEmitter;
 use HttpSoft\Message\Response;
-use HttpSoft\Message\ServerRequest;
-use HttpSoft\Message\UploadedFile;
+use HttpSoft\ServerRequest\ServerRequestCreator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
@@ -411,11 +410,7 @@ final class Router {
 
         $resolved = self::resolveRoute(self::$routes);
 
-        foreach ($_FILES as $key => $file) {
-            $_FILES[$key] = new UploadedFile($file["tmp_name"], $file["size"], $file["error"], $file["type"]);
-        }
-
-        $request = new ServerRequest($_SERVER, $_FILES, $_COOKIE, $_GET, $_POST, $_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], getallheaders(), "php://input");
+        $request = ServerRequestCreator::createFromGlobals($_SERVER);
 
         try {
             if ($resolved === null) {
