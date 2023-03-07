@@ -91,12 +91,12 @@ class Route {
         return $this;
     }
 
-    public function getBefores(): array
+    public function getMiddleware(): array
     {
         return $this->before;
     }
 
-    public function getAfters(): array
+    public function getPostware(): array
     {
         return $this->after;
     }
