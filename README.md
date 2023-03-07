@@ -4,6 +4,8 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
+- [Tnapf/Router](#tnapfrouter)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
 - [Routing](#routing)
@@ -25,7 +27,7 @@ Totally Not Another PHP Framework's Route Component
 - [Middleware](#middleware)
   - [Before Middleware](#before-middleware)
   - [After Middleware](#after-middleware)
-- [Mounting routes (Group routes)](#mounting-routes-group-routes)
+- [Group routes](#group-routes)
 
 # Installation
 
@@ -390,12 +392,12 @@ Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseI
 });
 ```
 
-# Mounting routes (Group routes)
+# Group routes
 
-If you would multiple routes to inherit the same prefix URI and before/after middleware then you can define them inside the mount method...
+If you would multiple routes to inherit the same prefix URI and before/after middleware then you can define them inside the group method...
 
 ```php
-Router::mount("/app", function () {
+Router::group("/app", function () {
     Router::get("/", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, int $userId) {
         return new TextResponse("Welcome Home!\nUserId: $userId");
     });
@@ -405,7 +407,7 @@ Router::mount("/app", function () {
     })->setParameter("channel", "\d+");
 
     // You can now mount inside of a mount
-    Router::mount("/api", function () {
+    Router::group("/api", function () {
         Router::get("/channel/{channel}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, int $userId) {
             return new JsonResponse(["Looking at channelId {$args->channel} as UserId $userId"]);
         })->setParameter("channel", "\d+");

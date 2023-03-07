@@ -188,14 +188,14 @@ final class Router {
             }
             
             foreach (self::$mount["afterMiddleware"] ?? [] as $after) {
-                $route->before($after);
+                $route->after($after);
             }
         }
 
         self::$routes[$route->uri] = &$route;
     }
 
-    public static function mount(string $baseUri, Closure $mounting, array $beforeMiddleware = [], array $afterMiddleware = []): void
+    public static function group(string $baseUri, Closure $grouping, array $beforeMiddleware = [], array $afterMiddleware = []): void
     {
         $oldMount = self::$mount;
 
@@ -207,7 +207,7 @@ final class Router {
             self::$mount['afterMiddleware'] = array_merge(self::$mount['afterMiddleware'], $afterMiddleware);
         }
 
-        call_user_func($mounting);
+        $grouping();
 
         self::$mount = $oldMount;
     }
