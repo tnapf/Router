@@ -3,17 +3,19 @@
 namespace Tnapf\Router;
 
 use Closure;
+use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Emitter\SapiEmitter;
-use HttpSoft\Message\Response;
+use HttpSoft\Runner\MiddlewarePipeline;
+use HttpSoft\Runner\MiddlewareResolver;
+use HttpSoft\Runner\ServerRequestRunner;
 use HttpSoft\ServerRequest\ServerRequestCreator;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
 use Throwable;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Exceptions\HttpException;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Routing\Route;
+use Psr\Http\Server\RequestHandlerInterface;
 
 final class Router {
     public const EMIT_EMPTY_RESPONSE = 1;
@@ -23,22 +25,21 @@ final class Router {
     /**
      * @var Route[]
      */
-    private static array $routes = [];
+    protected static array $routes = [];
 
-    /**
-     * @var array
-     */
-    private static array $mount = [];
+    protected static array $mount = [];
+
+    protected static ?EmitterInterface $emitter = null;
 
     /**
      * @var int The type of emit
      */
-    private static int $emitHttpExceptions = 0;
+    protected static int $emitHttpExceptions = 0;
 
     /**
      * @var Route[][]
      */
-    private static array $catchers = [
+    protected static array $catchers = [
         Exceptions\HttpBadRequest::class => [],
         Exceptions\HttpUnauthorized::class => [],
         Exceptions\HttpPaymentRequired::class => [],
@@ -79,10 +80,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function get(string $uri, array|Closure $controller): Route
+    public static function get(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, Methods::GET);
         
@@ -93,10 +94,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function post(string $uri, array|Closure $controller): Route
+    public static function post(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, Methods::POST);
         
@@ -107,10 +108,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function put(string $uri, array|Closure $controller): Route
+    public static function put(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, Methods::PUT);
         
@@ -121,10 +122,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function delete(string $uri, array|Closure $controller): Route
+    public static function delete(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, Methods::DELETE);
         
@@ -135,10 +136,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function options(string $uri, array|Closure $controller): Route
+    public static function options(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, Methods::OPTIONS);
         
@@ -149,10 +150,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function head(string $uri, array|Closure $controller): Route
+    public static function head(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, Methods::HEAD);
         
@@ -163,10 +164,10 @@ final class Router {
 
     /**
      * @param string $uri
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      * @return Route
      */
-    public static function all(string $uri, array|Closure $controller): Route
+    public static function all(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($uri, $controller, ...Methods::cases());
         
@@ -287,9 +288,9 @@ final class Router {
 
     /**
      * @param class-string<Throwable> $exceptionToCatch
-     * @param array|Closure $controller
+     * @param RequestHandlerInterface $controller
      */
-    public static function catch(string $toCatch, array|Closure $controller, ?string $uri = "/(.*)"): Route
+    public static function catch(string $toCatch, RequestHandlerInterface $controller, ?string $uri = "/(.*)"): Route
     {
         $catchable = array_keys(self::$catchers);
 
@@ -315,80 +316,6 @@ final class Router {
     }
 
     /**
-     * @param Route $route
-     * @param stdClass|null $args
-     * @param ServerRequestInterface $request
-     * @return ResponseInterface
-     */
-    private static function invokeRoute(Route $route, ?stdClass $args = null, ServerRequestInterface $request): ResponseInterface
-    {
-        if ($args === null) {
-            $args = new stdClass;
-        }
-
-        $params = [$request, null, $args];
-        
-        $befores = $route->getMiddleware();
-        
-        $basicMiddleware = static function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next) {
-            $next($response);
-        };
-
-        array_unshift($befores, $basicMiddleware);
-
-        $nexts = [];
-
-        foreach (array_keys($befores) as $key) {
-            $nexts[] = static function (ResponseInterface $response, mixed ...$extra) use ($route, $basicMiddleware, $params, $befores, $key, &$nexts): ResponseInterface {
-                if ($key === count($befores)-1) {
-                    $controller = $route->controller;
-
-                    if (!empty($route->getPostware()) && !isset($afters)) {
-                        $nexts = [];
-                        $afters = $route->getPostware();
-                        array_unshift($afters, $basicMiddleware);
-
-                        foreach (array_keys($afters) as $key) {
-                            $nexts[] = static function (ResponseInterface $response, mixed ...$extra) use ($params, $afters, $key, &$nexts): ResponseInterface {
-                                $controller = $afters[$key+1] ?? null;
-                                $params[] = $nexts[$key+1] ?? null;
-
-                                if ($controller === null) {
-                                    return $response;
-                                }
-                
-                                $params[1] = $response;
-                
-                                $params = array_merge($params, $extra);
-
-                                return !is_callable($controller)
-                                    ? call_user_func("{$controller[0]}::{$controller[1]}", ...$params)
-                                    : $controller(...$params);
-                            };
-                        }
-
-                        $params[] = $nexts[0];
-                    }
-                } else {
-                    $controller = $befores[$key+1];
-                    $params[] = $nexts[$key+1];
-                }
-
-                $params[1] = $response;
-
-                $params = array_merge($params, $extra);
-
-
-                return !is_callable($controller)
-                    ? call_user_func("{$controller[0]}::{$controller[1]}", ...$params)
-                    : $controller(...$params);
-            };
-        }
-
-        return $nexts[0](new Response);
-    }
-
-    /**
      * 
      */
     public static function emitHttpExceptions(int $type): void
@@ -396,8 +323,30 @@ final class Router {
         self::$emitHttpExceptions = $type;
     }
 
-    public static function run(): void
+    public static function invokeRoute(Route $route): void
     {
+        $request = ServerRequestCreator::createFromGlobals($_SERVER);
+        $pipeline = new MiddlewarePipeline();
+        $runner = new ServerRequestRunner($pipeline, self::$emitter);
+        $resolver = new MiddlewareResolver();
+
+        foreach ($route->getMiddleware() as $middleware) {
+            $pipeline->pipe($middleware);
+        }
+
+        $pipeline->pipe($resolver->resolve(fn() => $route->controller->handle($request)));
+
+        foreach ($route->getPostware() as $postware) {
+            $pipeline->pipe($postware);
+        }
+
+        $runner->run($request);
+    }
+
+    public static function run(EmitterInterface $emitter = null): void
+    {
+        self::$emitter = $emitter;
+
         $sortByLength = function (Route $a, Route $b) {
             return (strlen($a->uri) > strlen($b->uri));
         };
@@ -417,7 +366,7 @@ final class Router {
                 throw new Exceptions\HttpNotFound($request);
             }
 
-            $response = self::invokeRoute($resolved->route, $resolved->args, $request);
+            self::invokeRoute($resolved->route);
         } catch (Throwable $e) {
             if (in_array($e::class, array_keys(self::$catchers))) {
                 $resolved = self::resolveRoute(self::$catchers[$e::class]);
@@ -443,15 +392,14 @@ final class Router {
                     };
 
                     $response = call_user_func("{$class}::{$method}");
+                    (new SapiEmitter)->emit($response);
                 }
             }
 
             if (!isset($response)) {
                 $resolved->args->exception = $e;
-                $response = self::invokeRoute($resolved->route, $resolved->args, $request);
+                self::invokeRoute($resolved->route);
             }
         }
-        
-        (new SapiEmitter())->emit($response);
     }
 }
