@@ -182,11 +182,11 @@ final class Router {
     public static function addRoute(Route &$route): void
     {
         if (isset(self::$mount)) {
-            foreach (self::$mount["beforeMiddleware"] ?? [] as $before) {
+            foreach (self::$mount["middleware"] ?? [] as $before) {
                 $route->before($before);
             }
             
-            foreach (self::$mount["afterMiddleware"] ?? [] as $after) {
+            foreach (self::$mount["postware"] ?? [] as $after) {
                 $route->after($after);
             }
         }
@@ -194,16 +194,16 @@ final class Router {
         self::$routes[$route->uri] = &$route;
     }
 
-    public static function group(string $baseUri, Closure $grouping, array $beforeMiddleware = [], array $afterMiddleware = []): void
+    public static function group(string $baseUri, Closure $grouping, array $middleware = [], array $postware = []): void
     {
         $oldMount = self::$mount;
 
         if (empty(self::$mount['baseUri'])) {
-            self::$mount = compact("baseUri", "beforeMiddleware", "afterMiddleware");
+            self::$mount = compact("baseUri", "middleware", "postware");
         } else {
             self::$mount['baseUri'] .= $baseUri;
-            self::$mount['beforeMiddleware'] = array_merge(self::$mount['beforeMiddleware'], $beforeMiddleware);
-            self::$mount['afterMiddleware'] = array_merge(self::$mount['afterMiddleware'], $afterMiddleware);
+            self::$mount['middleware'] = array_merge(self::$mount['middleware'], $middleware);
+            self::$mount['postware'] = array_merge(self::$mount['postware'], $postware);
         }
 
         $grouping();
@@ -328,7 +328,7 @@ final class Router {
 
         $params = [$request, null, $args];
         
-        $befores = $route->getBefores();
+        $befores = $route->getMiddleware();
         
         $basicMiddleware = static function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next) {
             $next($response);
@@ -343,9 +343,9 @@ final class Router {
                 if ($key === count($befores)-1) {
                     $controller = $route->controller;
 
-                    if (!empty($route->getAfters()) && !isset($afters)) {
+                    if (!empty($route->getPostware()) && !isset($afters)) {
                         $nexts = [];
-                        $afters = $route->getAfters();
+                        $afters = $route->getPostware();
                         array_unshift($afters, $basicMiddleware);
 
                         foreach (array_keys($afters) as $key) {
