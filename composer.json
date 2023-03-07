@@ -19,6 +19,7 @@
         "httpsoft/http-server-request": "^1.0",
         "php": ">=8.1",
         "commandstring/utils": "^1.4",
-        "httpsoft/http-emitter": "^1.0"
+        "httpsoft/http-emitter": "^1.0",
+        "httpsoft/http-runner": "^1.0"
     }
 }
