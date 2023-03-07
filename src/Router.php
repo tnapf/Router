@@ -435,19 +435,12 @@ final class Router {
                         $class = $e::class;
                     }
 
-                    switch (self::$emitHttpExceptions) {
-                        case 1:
-                            $method = "buildEmptyResponse";
-                            break;
-                        case 2:
-                            $method = "buildHtmlResponse";
-                            break;
-                        case 3: 
-                            $method = "buildJsonResponse";
-                            break;
-                        default:
-                            $method = "buildEmptyResponse";
-                    }
+                    $method = match(self::$emitHttpExceptions) {
+                        self::EMIT_EMPTY_RESPONSE => "buildEmptyResponse",
+                        self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
+                        self::EMIT_JSON_RESPONSE => "buildJsonResponse",
+                        default => "buildEmptyResponse"
+                    };
 
                     $response = call_user_func("$class::$method");
                 }
