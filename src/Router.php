@@ -442,7 +442,7 @@ final class Router {
                         default => "buildEmptyResponse"
                     };
 
-                    $response = call_user_func("$class::$method");
+                    $response = call_user_func("{$class}::{$method}");
                 }
             }
 
