@@ -20,5 +20,8 @@
         "commandstring/utils": "^1.4",
         "httpsoft/http-emitter": "^1.0",
         "httpsoft/http-response": "^1.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.7"
     }
 }
