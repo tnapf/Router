@@ -8,3 +8,4 @@ class HttpLengthRequired extends HttpException {
     public const DESCRIPTION = "Indicates that the server refuses to accept the request without a defined Content-Length.";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/411";
 }
+

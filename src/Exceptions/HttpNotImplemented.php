@@ -8,3 +8,4 @@ class HttpNotImplemented extends HttpException {
     public const DESCRIPTION = "Indicates that the server does not support the functionality required to fulfill the request.";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/501";
 }
+

@@ -8,3 +8,4 @@ class HttpLocked extends HttpException {
     public const DESCRIPTION = "Means the source or destination resource of a method is locked.";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/423";
 }
+
