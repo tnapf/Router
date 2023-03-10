@@ -1,8 +1,11 @@
 <?php
 
+namespace HttpCodesApi;
+
 use HttpSoft\Response\JsonResponse;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use stdClass;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Routing\Next;
 

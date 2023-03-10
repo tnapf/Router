@@ -1,7 +1,10 @@
 <?php
 
+namespace HttpCodesApi;
+
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use stdClass;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Routing\Next;
