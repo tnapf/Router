@@ -7,7 +7,6 @@ Totally Not Another PHP Framework's Route Component
 - [Tnapf/Router](#tnapfrouter)
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
-- [Basic Usage](#basic-usage)
 - [Routing](#routing)
   - [Routing Shorthands](#routing-shorthands)
 - [Route Patterns](#route-patterns)
@@ -15,8 +14,6 @@ Totally Not Another PHP Framework's Route Component
   - [Dynamic Placeholder-based Route Patterns](#dynamic-placeholder-based-route-patterns)
   - [Dynamic PCRE-based Route Patterns](#dynamic-pcre-based-route-patterns)
 - [Controllers](#controllers)
-  - [Anonymous Function Controller](#anonymous-function-controller)
-  - [Class Controller](#class-controller)
 - [Template Engine Integration](#template-engine-integration)
 - [Responding to requests](#responding-to-requests)
 - [Catchable Routes](#catchable-routes)
@@ -25,8 +22,7 @@ Totally Not Another PHP Framework's Route Component
   - [Custom Catchables](#custom-catchables)
   - [Available HttpExceptions](#available-httpexceptions)
 - [Middleware](#middleware)
-  - [Before Middleware](#before-middleware)
-  - [After Middleware](#after-middleware)
+- [Postware](#postware)
 - [Group routes](#group-routes)
 
 # Installation
@@ -35,51 +31,12 @@ Totally Not Another PHP Framework's Route Component
 composer require tnapf/router
 ```
 
-# Basic Usage
-
-```php
-<?php
-
-require_once "vendor/autoload.php";
-
-use Tnapf\Router\Router;
-use HttpSoft\Response\TextResponse;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Tnapf\Router\Exceptions\HttpInternalServerError;
-use Tnapf\Router\Exceptions\HttpNotFound;
-
-Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
-    $users = ["commandstring", "realdiegopoptart"];
-
-    if (!in_array($args->username, $users)) {
-        throw new HttpNotFound($req);
-    }
-
-    return new TextResponse("Viewing {$args->username}'s Profile");
-})->setParameter("username", "[a-zA-Z_]+");
-
-Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
-    return new TextResponse("{$args->username} is not registered!");
-}, "/user/{username}")->setParameter("username", "[a-zA-Z_]+");
-
-Router::catch(HttpInternalServerError::class, function () {
-    return new TextResponse("An internal server error has occurred");
-});
-
-Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
-    return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
-});
-
-Router::run();
-```
-
 # Routing
 
 You can manually create a route and then store it with the addRoute method
 
 ```php
-$route = new Route("pattern", function() { /* ... */ }, Methods::GET);
+$route = new Route("pattern", RequestHandlerInterfaceImplementation::class, Methods::GET);
 
 Router::addRoute($route);
 ```
@@ -89,7 +46,7 @@ If you want the same controller to be used for multiple methods you can do the f
 ```php
 use Tnapf\Router\Enums\Methods;
 
-$route = new Route("pattern", function() { /* ... */ }, Methods::GET, Methods::POST, Methods::HEAD, ...);
+$route = new Route("pattern", RequestHandlerInterfaceImplementation::class, Methods::GET, Methods::POST, Methods::HEAD, ...);
 
 Router::addRoute($route);
 ```
@@ -99,19 +56,19 @@ Router::addRoute($route);
 Shorthands for single request methods are provided
 
 ```php
-Router::get('pattern', function() { /* ... */ });
-Router::post('pattern', function() { /* ... */ });
-Router::put('pattern', function() { /* ... */ });
-Router::delete('pattern', function() { /* ... */ });
-Router::options('pattern', function() { /* ... */ });
-Router::patch('pattern', function() { /* ... */ });
-Router::head('pattern', function() { /* ... */ });
+Router::get('pattern', RequestHandlerInterfaceImplementation::class);
+Router::post('pattern', RequestHandlerInterfaceImplementation::class);
+Router::put('pattern', RequestHandlerInterfaceImplementation::class);
+Router::delete('pattern', RequestHandlerInterfaceImplementation::class);
+Router::options('pattern', RequestHandlerInterfaceImplementation::class);
+Router::patch('pattern', RequestHandlerInterfaceImplementation::class);
+Router::head('pattern', RequestHandlerInterfaceImplementation::class);
 ```
 
 You can use this shorthand for a route that can be accessed using any method:
 
 ```php
-Router::all('pattern', function() { /* ... */ });
+Router::all('pattern', RequestHandlerInterfaceImplementation::class);
 ```
 
 # Route Patterns
@@ -133,10 +90,15 @@ Examples:
 Usage Examples:
 
 ```php
-Router::get('/about', function(ServerRequestInterface $req, ResponseInterface $res) {
-    $res->getBody()->write("Hello World");
-    return $res;
-});
+class AboutController implements RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
+    {
+        $response->getBody()->write("Hello World");
+        return $response;
+    }
+}
+
+Router::get('/about', AboutController::class);
 ```
 
 ## Dynamic Placeholder-based Route Patterns
@@ -154,10 +116,15 @@ Examples:
 Placeholders are easier to use than PRCEs, but offer you less control as they internally get translated to a PRCE that matches any character (`.*`).
 
 ```php
-Router::get('/movies/{movieId}/photos/{photoId}', function(ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
-    $res->getBody()->write('Movie #'.$args->movieId.', photo #'.$args->photoId);
-    return $res;
-});
+class MovieController implements \Tnapf\Router\Interfaces\RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
+    {
+        $res->getBody()->write('Movie #'.$args->movieId.', photo #'.$args->photoId);
+        return $res;
+    }
+}
+
+Router::get('/movies/{movieId}/photos/{photoId}', MovieController::class);
 ```
 
 ## Dynamic PCRE-based Route Patterns
@@ -177,10 +144,15 @@ Note: The [PHP PCRE Cheat Sheet](https://courses.cs.washington.edu/courses/cse15
 The __subpatterns__ defined in Dynamic PCRE-based Route Patterns are passed into the route's controller like __dynamic placeholders__.
 
 ```php
-Router::get('/hello/{name}', function(ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
-    $res->getBody()->write('Hello '.htmlentities($args->name));
-    return $res;
-})->setParameter("name", "\w+");
+class HelloController implements \Tnapf\Router\Interfaces\RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
+    {
+        $response->getBody()->write('Hello '.htmlentities($args->name));
+        return $response;
+    }
+}
+
+Router::get('/hello/{name}', HelloController::class)->setParameter("name", "\w+");
 ```
 
 Note: The leading `/` at the very beginning of a route pattern is not mandatory, but is recommended.
@@ -188,43 +160,25 @@ Note: The leading `/` at the very beginning of a route pattern is not mandatory,
 When multiple subpatterns are defined, the resulting __route handling parameters__ are passed into the route handling function in the order they are defined:
 
 ```php
-Router::get('/movies/{movieId}/photos/{photoId}', function(ServerRequestInterface $req, ServerResponseInterface $res, stdClass $args) {
-    $res->getBody()->write('Movie #'.$args->movieId.', photo #'.$args->photoId);
-    return $res;
-})->setParameter("movieId", "\d+")->setParameter("photoId", "\d+");
+Router::get('/movies/{movieId}/photos/{photoId}', MovieController::class)->setParameter("movieId", "\d+")->setParameter("photoId", "\d+");
 ```
 
 # Controllers
 
-When defining a route you can either pass an anonymous function or an array that contains a class along with a static method to invoke. Additionally, your controller must return an implementation of the PSR7 Response Interface
-
-## Anonymous Function Controller
+When defining a route you pass a string of a class that implements `Tnapf\Router\Interfaces\RequestHandlerInterface`
 
 ```php
-Router::get("/home", function (ServerRequestInterface $req, ResponseInterface $res) {
-    $res->getBody()->write("Welcome home!");
-    return $res;
-});
-```
-
-## Class Controller
-
-Create a class with a static method to handle the route
-
-```php
-class HomeController extends Controller {
-    public static function handle(ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface
+class HomeController implements \Tnapf\Router\Interfaces\RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
     {
-        $res->getBody()->write("Welcome home!");
-        return $res;
+        $response->getBody()->write('Welcome Home!');
+        return $response;
     }
 }
 ```
 
-Then insert the class string into an array the first key is the class string and the second is the name of the method
-
 ```php
-Router::get("/home", [HomeController::class, "handle"]);
+Router::get("/home", HomeController::class);
 ```
 
 # Template Engine Integration
@@ -239,9 +193,17 @@ $env->twig = new Environment(new \Twig\Loader\FilesystemLoader("/path/to/views")
 
 // ...
 
-Router::get("/home", function (ServerRequestInterface $req, ResponseInterface $res): ResponseInterface {
-    return new HtmlResponse($env->get("twig")->render("home.html"));
-});
+class HomeController implements \Tnapf\Router\Interfaces\RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
+    {
+        return new HtmlResponse($env->get("twig")->render("home.html"));
+        return $response;
+    }
+}
+
+// ...
+
+Router::get("/home", HomeController::class);
 ```
 
 # Responding to requests
@@ -262,30 +224,61 @@ Catchable routes are routes that are only invoked when exceptions are thrown whi
 ## Catching
 
 ```php
-Router::catch(HttpException::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args) {
-    return new TextResponse("An internal server error has occurred");
-});
+class CatchInternalServerError implements \Tnapf\Router\Interfaces\RequestHandlerInterface
+{
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, ?Next $next = null): ResponseInterface
+    {
+        $logs = fopen("./error.log", "w+");
+        fwrite($logs, $args->exception->__toString());
+        fclose($logs);
+        
+        return HttpInternalServerError::buildHtmlResponse();
+    }
+}
+
+Router::catch(HttpInternalServerError::class, CatchInternalServerError::class);
 ```
 *Note that `$args->exception` will be the exception throw*
 
 ## Specific URI's
 
 ```php
-Router::catch(HttpNotFound::class, function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
-    return new TextResponse("{$req->getRequestTarget()} is not a valid URI");
-}, "/users/{username}");
+class CatchInternalServerError implements \Tnapf\Router\Interfaces\RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, ?Next $next = null): ResponseInterface
+    {
+        return new TextResponse("{$req->getRequestTarget()} is not a valid URI");   
+    }
+}
+
+
+Router::catch(HttpNotFound::class, CatchInternalServerError::class, "/users/{username}");
 ```
 **Note: Catchers are treated just like routes meaning they can have custom parameters as shown in [Basic Usage](#basic-usage)**
 
 ## Custom Catchables
 
-By default, you can only catch the exceptions shown below but let's say you make a custom exception named `UserNotFound` and want to have a custom response emitted when it's thrown...well you can...
+By default, you can only catch the exceptions shown below but you can create a custom exception by implementing `Tnapf\Router\Exceptions\HttpException`
 
 ```php
-Router::makeCatchable(UserNotFound::class)
-```
+class UserNotFound extends \Tnapf\Router\Exceptions\HttpException {
+    public const CODE = 403; 
+    public const PHRASE = "User Not Found";
+    public const DESCRIPTION = "Indicates that the information provided does not link to an existing user.";
+    public const HREF = "https://docs.example.com/errors/UserNotFound";
+}
 
-and then catch it like a regular HttpException.
+class CatchUserNotFound extends \Tnapf\Router\Interfaces\RequestHandlerInterface {
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, ?Next $next = null): ResponseInterface
+    {
+        return new JsonResponse([
+            "errors" => ["UserNotFound"],
+            "data" => [/* a dump of the data received in the request */]
+        ]);   
+    }
+}
+
+Router::catch(UserNotFound::class, CatchUserNotFound::class);
+```
 
 ## Available HttpExceptions
 
@@ -332,44 +325,51 @@ and then catch it like a regular HttpException.
 
 Middleware is software that connects the model and view in an MVC application, facilitating the communication and data flow between these two components while also providing a layer of abstraction, decoupling the model and view and allowing them to interact without needing to know the details of how the other component operates.
 
-A good example is having before middleware that makes sure the user is an administrator before they go to a restricted page. You could do this in your routes controller for every admin page but that would be redundant. Or for after middleware, you may have a REST API that returns a JSON response. You can have after middleware to make sure the JSON response isn't malformed.
+A good example of middleware is making sure the user is an administrator before they go to a restricted page. You could do this in your routes controller for every admin page but that would be redundant.
 
-## Before Middleware
-
-You can add middleware to a route by invoking the before method and supply controller(s). 
+You can add middleware to a route by invoking the addMiddleware method and supply controller(s). 
 
 **NOTE: The controllers will be invoked in the order they're appended!**
 
 ```php
-Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args): ResponseInterface {
-    $users = ["cmdstr", "realdiegopoptart"];
-
-    if (!in_array($args->username, $users)) {
-        throw new HttpNotFound($req);
-    }
-
-    $res->getBody()->write(" {$args->username}'s profile");
-
-    return $res;
-})->setParameter("username", "[a-zA-Z_]+")->before(function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Closure $next): ResponseInterface
+class UserExists implements RequestHandlerInterface
 {
-    $res = new TextResponse("Viewing");
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
+    {
+        $users = ["command_string", "realdiegopoptart"];
 
-    $res->getBody()->seek(0, SEEK_END);
+        if (!in_array(strtolower($args->username), $users)) {
+            throw new HttpNotFound($request);
+        }
 
-    return $next($res); // will go to the next part of middleware
-});
+        return $next->next($request, $response, $args);
+    }
+}
+
+class Handler implements RequestHandlerInterface
+{
+    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, Next $next): ResponseInterface
+    {
+        $response = $response->withAddedHeader("content-type", "text/plain");
+        $response->getBody()->write("You're viewing {$args->username}'s profile!");
+
+        return $response;
+    }
+}
+
+Router::get("/profile/{username}", Handler::class)->addMiddleware(UserExists::class)->setParameter("username", "[a-zA-Z_ 0-9]+");
+
+Router::emitHttpExceptions(Router::EMIT_HTML_RESPONSE);
+Router::run();
 ```
 
-*Note: If you don't want to proceed to the next part of middleware just return a `ResponseInterface` instead of passing response to the `$next` closure*
+*Note: If you don't want to proceed to the next part of middleware just return a `ResponseInterface` instead of invoking `Nex
 
-You can also include a class string just like the controller
+# Postware
 
-*Special note about middleware, you can pass variables from beforeMiddleware to the main route or from the main route to afterMiddleware by supplying it as the second argument in the next closure. These variables will be added as an additional argument in the next piece of middleware*
+Postware is a type of middleware that operates on the response generated by the Controller and can modify the response data before it is sent to the client. While it doesn't sit between the Controller and the View, it does operate on the response after the View has been generated.
 
-## After Middleware
-
-Adding after middleware is just like before middleware, just with a different method.
+Adding postware is just like middleware, just with a different method.
 
 ```php
 Router::get("/user/{username}", function (ServerRequestInterface $req, ResponseInterface $res, stdClass $args, Closure $next): ResponseInterface {
