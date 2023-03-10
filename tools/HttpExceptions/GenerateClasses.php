@@ -34,7 +34,6 @@ class <?= $className ?> extends HttpException {
     public const DESCRIPTION = "<?= $code->description ?>";
     public const HREF = "<?= $code->mdn ?>";
 }
-
 <?php 
 
 file_put_contents("../../src/Exceptions/$className.php", ob_get_clean());

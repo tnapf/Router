@@ -8,4 +8,3 @@ class HttpTooManyRequests extends HttpException {
     public const DESCRIPTION = "Indicates that the user has sent too many requests in a given amount of time (rate limiting).";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429";
 }
-
