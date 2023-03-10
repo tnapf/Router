@@ -11,9 +11,14 @@ use Tnapf\Router\Exceptions\HttpNotFound;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Routing\Next;
 
-class GetCode implements RequestHandlerInterface {
-    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, ?Next $next = null): ResponseInterface
-    {
+class GetCode implements RequestHandlerInterface
+{
+    public static function handle(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        stdClass $args,
+        ?Next $next = null
+    ): ResponseInterface {
         foreach (getCodes() as $code) {
             if ($args->code === $code->code) {
                 if ($args->type === "json") {
@@ -22,7 +27,7 @@ class GetCode implements RequestHandlerInterface {
                     ob_start();
                     require "./HtmlResponse.php";
                     $html = ob_get_clean();
-    
+
                     return new HtmlResponse($html);
                 }
             }
