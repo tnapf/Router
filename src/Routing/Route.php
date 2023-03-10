@@ -12,7 +12,15 @@ class Route
 {
     public readonly string $uri;
     private array $methods;
+
+    /**
+     * @var RequestHandlerInterface[]
+     */
     private array $middleware = [];
+
+    /**
+     * @var RequestHandlerInterface[]
+     */
     private array $postware = [];
     private stdClass $parameters;
 
@@ -84,11 +92,17 @@ class Route
         return $this;
     }
 
+    /**
+     * @return RequestHandlerInterface[]
+     */
     public function getMiddleware(): array
     {
         return $this->middleware;
     }
 
+    /**
+     * @return RequestHandlerInterface[]
+     */
     public function getPostware(): array
     {
         return $this->postware;
