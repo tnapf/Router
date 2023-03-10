@@ -16,7 +16,6 @@ function getCodes(): array
 Router::get("/{type}/{code}", GetCode::class)->setParameter("code", "[0-9]{3}")->setParameter("type", "json|html");
 Router::get("/", ListCodes::class);
 
-Router::catch(HttpInternalServerError::class, CatchInternalServerError::class);
-Router::emitHttpExceptions(Router::EMIT_JSON_RESPONSE);
+Router::emitHttpExceptions(Router::EMIT_HTML_RESPONSE);
 
 Router::run();
