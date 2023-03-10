@@ -6,6 +6,7 @@ use HttpSoft\Response\EmptyResponse;
 use HttpSoft\Response\HtmlResponse;
 use HttpSoft\Response\JsonResponse;
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 
 abstract class HttpException extends \Exception {
     public const CODE = 0;
@@ -29,11 +30,25 @@ abstract class HttpException extends \Exception {
         $phrase = static::PHRASE;
         $href = static::HREF;
 
+        if (!$code) {
+            $title = $phrase;
+        } else if (strlen($phrase)) {
+            $title = "{$code} - {$phrase}";
+        } else {
+            throw new RuntimeException("Phrase constant is not defined.");
+        }
+
+        if (!strlen($description)) {
+            throw new RuntimeException("Description constant defined.");
+        }
+
+        $phraseHtml = strlen($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
+
         $html = <<<TEMPLATE
         <!DOCTYPE HTML>
         <html lang='en'>
         <head>
-            <title>{$code} - {$phrase}</title>
+            <title>{$title}</title>
         </head>
         <body>
             <style>
@@ -55,7 +70,7 @@ abstract class HttpException extends \Exception {
                 }
             </style>
             <div>
-                <h1>{$code} - <a href='{$href}'>{$phrase}</a></h1>
+                <h1>{$code} - {$phraseHtml}</h1>
                 <hr>
                 <p>{$description}</p>
             </div>
