@@ -12,7 +12,7 @@ if ($code === 0) {
     $title = "{$code} - {$phrase}";
 }
 
-$phraseHtml = strlen($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
+$phraseHtml = !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
 
 ?>
 
