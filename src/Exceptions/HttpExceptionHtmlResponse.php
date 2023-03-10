@@ -6,7 +6,7 @@
  * @var string $href
  */
 
-if (!$code) {
+if ($code === 0) {
     $title = $phrase;
 } else if (!empty($phrase)) {
     $title = "{$code} - {$phrase}";
