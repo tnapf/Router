@@ -6,7 +6,7 @@ use InvalidArgumentException;
 use stdClass;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Router;
-use Psr\Http\Server\RequestHandlerInterface;
+use Tnapf\Router\Interfaces\RequestHandlerInterface;
 
 class Route {
     public readonly string $uri;
@@ -23,6 +23,10 @@ class Route {
     public function __construct(string $uri, public readonly string $controller, Methods ...$methods) {
         if (!str_starts_with($uri, "/")) {
             $uri = "/{$uri}";
+        }
+
+        if (!is_subclass_of($controller, RequestHandlerInterface::class)) {
+            throw new InvalidArgumentException("{$controller} must implement ".RequestHandlerInterface::class);
         }
 
         $this->uri = Router::getBaseUri()."$uri";
@@ -51,8 +55,7 @@ class Route {
     public function addMiddleware(string ...$middlewares): self
     {
         foreach ($middlewares as $middleware) {
-            $implements = class_implements($middleware);
-            if (!$implements || !in_array(RequestHandlerInterface::class, $implements)) {
+            if (!is_subclass_of($middleware, RequestHandlerInterface::class)) {
                 throw new InvalidArgumentException("{$middleware} must implement ".RequestHandlerInterface::class);
             }
 
@@ -69,8 +72,7 @@ class Route {
     public function addPostware(string ...$postwares): self
     {
         foreach ($postwares as $postware) {
-            $implements = class_implements($postware);
-            if (!$implements || !in_array(RequestHandlerInterface::class, $implements)) {
+            if (!is_subclass_of($postware, RequestHandlerInterface::class)) {
                 throw new InvalidArgumentException("{$postware} must implement ".RequestHandlerInterface::class);
             }
 
