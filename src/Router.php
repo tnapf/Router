@@ -41,44 +41,7 @@ final class Router {
     /**
      * @var Route[][]
      */
-    protected static array $catchers = [
-        Exceptions\HttpBadRequest::class => [],
-        Exceptions\HttpUnauthorized::class => [],
-        Exceptions\HttpPaymentRequired::class => [],
-        Exceptions\HttpForbidden::class => [],
-        Exceptions\HttpNotFound::class => [],
-        Exceptions\HttpMethodNotAllowed::class => [],
-        Exceptions\HttpNotAcceptable::class => [],
-        Exceptions\HttpProxyAuthenticationRequired::class => [],
-        Exceptions\HttpRequestTimeout::class => [],
-        Exceptions\HttpConflict::class => [],
-        Exceptions\HttpGone::class => [],
-        Exceptions\HttpLengthRequired::class => [],
-        Exceptions\HttpPreconditionFailed::class => [],
-        Exceptions\HttpPayloadTooLarge::class => [],
-        Exceptions\HttpURITooLong::class => [],
-        Exceptions\HttpUnsupportedMediaType::class => [],
-        Exceptions\HttpRangeNotSatisfiable::class => [],
-        Exceptions\HttpExpectationFailed::class => [],
-        Exceptions\HttpImateapot::class => [],
-        Exceptions\HttpUpgradeRequired::class => [],
-        Exceptions\HttpUnprocessableEntity::class => [],
-        Exceptions\HttpLocked::class => [],
-        Exceptions\HttpFailedDependency::class => [],
-        Exceptions\HttpPreconditionRequired::class => [],
-        Exceptions\HttpTooManyRequests::class => [],
-        Exceptions\HttpRequestHeaderFieldsTooLarge::class => [],
-        Exceptions\HttpUnavailableForLegalReasons::class => [],
-        Exceptions\HttpInternalServerError::class => [],
-        Exceptions\HttpNotImplemented::class => [],
-        Exceptions\HttpBadGateway::class => [],
-        Exceptions\HttpServiceUnavailable::class => [],
-        Exceptions\HttpGatewayTimeout::class => [],
-        Exceptions\HttpHTTPVersionNotSupported::class => [],
-        Exceptions\HttpVariantAlsoNegotiates::class => [],
-        Exceptions\HttpInsufficientStorage::class => [],
-        Exceptions\HttpNetworkAuthenticationRequired::class => []
-    ];
+    protected static array $catchers = [];
 
     /**
      * @param string $uri
