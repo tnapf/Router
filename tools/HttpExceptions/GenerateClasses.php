@@ -11,8 +11,6 @@ abstract class Code {
     public string $mdn;
 }
 
-echo TAB.'private static array $catchers = ['.PHP_EOL;
-
 foreach ($codes as $key => $code) {
     /** @var Code $code */
 
@@ -39,15 +37,6 @@ class <?= $className ?> extends HttpException {
 
 <?php 
 
-file_put_contents("../src/Exceptions/$className.php", ob_get_clean());
-
-
-
-echo TAB.TAB."Exceptions\\$className::class => []";
-echo ($key !== count($codes)-1) ? ",\n" : "\n";
+file_put_contents("../../src/Exceptions/$className.php", ob_get_clean());
 
 }
-
-echo TAB."];";
-
-echo "\nBE SURE TO UPDATE 'src/Router.php:32'";
