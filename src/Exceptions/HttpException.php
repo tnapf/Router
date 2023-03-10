@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
 abstract class HttpException extends \Exception {
-    public const CODE = 0;
+    public const CODE = 500;
     public const DESCRIPTION = "";
     public const PHRASE = "";
     public const HREF = "";
@@ -88,6 +88,24 @@ abstract class HttpException extends \Exception {
         $phrase = static::PHRASE;
         $href = static::HREF;
 
-        return new JsonResponse(compact("code", "description", "phrase", "href"), static::CODE);
+        if (!strlen($phrase)) {
+            throw new RuntimeException("Phrase constant is not defined.");
+        }
+
+        if (!strlen($description)) {
+            throw new RuntimeException("Description constant defined.");
+        }
+
+        $json = compact("description", "phrase");
+
+        if ($code) {
+            $json["code"] = $code;
+        }
+
+        if (strlen($href)) {
+            $json["href"] = $href;
+        }
+
+        return new JsonResponse($json, static::CODE);
     }
 }
