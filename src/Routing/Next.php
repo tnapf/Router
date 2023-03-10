@@ -8,7 +8,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
 
-class Next {
+class Next
+{
     /**
      * @var class-string<RequestHandlerInterface>[]
      */
@@ -25,7 +26,9 @@ class Next {
     /**
      * @param class-string<RequestHandlerInterface> $requestHandler
      */
-    public function __construct(protected readonly string $requestHandler) {}
+    public function __construct(protected readonly string $requestHandler)
+    {
+    }
 
     /**
      * @var class-string<RequestHandlerInterface>[]
@@ -33,7 +36,7 @@ class Next {
     public function addMiddleware(string ...$middleware): self
     {
         if ($this->completed) {
-            throw new LogicException("This instance has already been marked complete and cannot have anymore middleware added");
+            throw new LogicException("Instance marked complete, cannot add any additional middleware");
         }
 
         foreach ($middleware as $middlewareClass) {
@@ -49,7 +52,7 @@ class Next {
     public function addPostware(string ...$postware): self
     {
         if ($this->completed) {
-            throw new LogicException("This instance has already been marked complete and cannot have anymore postware added");
+            throw new LogicException("Instance marked complete, cannot add any additional postware");
         }
 
         foreach ($postware as $postwareClass) {
@@ -70,8 +73,11 @@ class Next {
         return $this;
     }
 
-    public function next(ServerRequestInterface $request, ResponseInterface $response, stdClass $args): ResponseInterface
-    {
+    public function next(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        stdClass $args
+    ): ResponseInterface {
         $handler = $this->middleware[$this->middlewarePosition++] ?? $this->postware[$this->postwarePosition++] ?? null;
 
         if ($handler === null) {

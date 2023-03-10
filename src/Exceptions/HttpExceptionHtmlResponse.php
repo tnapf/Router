@@ -8,7 +8,7 @@
 
 if ($code === 0) {
     $title = $phrase;
-} else if (!empty($phrase)) {
+} elseif (!empty($phrase)) {
     $title = "{$code} - {$phrase}";
 }
 
@@ -19,7 +19,7 @@ $phraseHtml = !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
 <!DOCTYPE HTML>
 <html lang='en'>
 <head>
-    <title><?= $title ?></title>
+    <title><?php echo $title ?></title>
 </head>
 <body>
     <style>
@@ -41,9 +41,9 @@ $phraseHtml = !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
         }
     </style>
     <div>
-        <h1><?= $code ?> - <?= $phraseHtml ?></h1>
+        <h1><?php echo $code ?> - <?php echo $phraseHtml ?></h1>
         <hr>
-        <p><?= $description ?></p>
+        <p><?php echo $description ?></p>
     </div>
 </body>
 
