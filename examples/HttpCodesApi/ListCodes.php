@@ -9,14 +9,14 @@ use stdClass;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Routing\Next;
 
-class ListCodes implements RequestHandlerInterface {
+class ListCodes implements RequestHandlerInterface
+{
     public static function handle(
         ServerRequestInterface $request,
         ResponseInterface $response,
         stdClass $args,
         ?Next $next = null
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         return new JsonResponse(getCodes());
     }
 }
