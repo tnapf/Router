@@ -8,3 +8,4 @@ class HttpInternalServerError extends HttpException {
     public const DESCRIPTION = "Indicates that the server encountered an unexpected condition that prevented it from fulfilling the request.";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500";
 }
+

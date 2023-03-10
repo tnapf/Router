@@ -8,3 +8,4 @@ class HttpProxyAuthenticationRequired extends HttpException {
     public const DESCRIPTION = "Is similar to 401 (Unauthorized), but indicates that the client needs to authenticate itself in order to use a proxy.";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/407";
 }
+

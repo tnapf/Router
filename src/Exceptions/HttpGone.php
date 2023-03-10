@@ -8,3 +8,4 @@ class HttpGone extends HttpException {
     public const DESCRIPTION = "Indicates that access to the target resource is no longer available at the origin server and that this condition is likely to be permanent.";
     public const HREF = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/410";
 }
+
