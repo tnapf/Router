@@ -276,7 +276,7 @@ final class Router {
             return;
         }
 
-        if (!is_subclass_of(HttpException::class, $toCatch)) {
+        if (!is_subclass_of($toCatch, HttpException::class)) {
             throw new \InvalidArgumentException("{$toCatch} must extend ".HttpException::class);
         }
 
@@ -332,18 +332,14 @@ final class Router {
             if (in_array($e::class, array_keys(self::$catchers))) {
                 $resolved = self::resolveRoute(self::$catchers[$e::class]);
             } else {
-                $resolved = self::resolveRoute(self::$catchers[HttpInternalServerError::class]);
+                $resolved = self::resolveRoute(self::$catchers[HttpInternalServerError::class] ?? []);
             }
 
             if ($resolved === null) {
                 if (!self::$emitHttpExceptions) {
                     throw $e;
                 } else {
-                    if (!is_subclass_of($e, HttpException::class)) {
-                        $class = HttpInternalServerError::class;
-                    } else {
-                        $class = $e::class;
-                    }
+                    $class = $e::class;
 
                     $method = match(self::$emitHttpExceptions) {
                         self::EMIT_EMPTY_RESPONSE => "buildEmptyResponse",
