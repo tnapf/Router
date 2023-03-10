@@ -19,7 +19,8 @@ use Tnapf\Router\Routing\Next;
 use Tnapf\Router\Routing\Route;
 use Tnapf\Router\Routing\ResolvedRoute;
 
-final class Router {
+final class Router
+{
     public const EMIT_EMPTY_RESPONSE = 1;
     public const EMIT_HTML_RESPONSE = 2;
     public const EMIT_JSON_RESPONSE = 3;
@@ -44,105 +45,105 @@ final class Router {
     protected static array $catchers = [];
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function get(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::GET);
-        
+
         self::addRoute($route);
-        
+
         return $route;
     }
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function post(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::POST);
-        
+
         self::addRoute($route);
 
         return $route;
     }
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function put(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::PUT);
-        
+
         self::addRoute($route);
 
         return $route;
     }
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function delete(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::DELETE);
-        
+
         self::addRoute($route);
 
         return $route;
     }
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function options(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::OPTIONS);
-        
+
         self::addRoute($route);
 
         return $route;
     }
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function head(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::HEAD);
-        
+
         self::addRoute($route);
 
         return $route;
     }
 
     /**
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface>
+     * @param  string                                $uri
+     * @param  class-string<RequestHandlerInterface>
      * @return Route
      */
     public static function all(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, ...Methods::cases());
-        
+
         self::addRoute($route);
 
         return $route;
     }
 
     /**
-     * @param Route $route
+     * @param  Route $route
      * @return void
      */
     public static function addRoute(Route &$route): void
@@ -151,7 +152,7 @@ final class Router {
             foreach (self::$group["middlewares"] ?? [] as $middlware) {
                 $route->addMiddleware($middlware);
             }
-            
+
             foreach (self::$group["postwares"] ?? [] as $postware) {
                 $route->addPostware($postware);
             }
@@ -183,16 +184,19 @@ final class Router {
     }
 
     /**
-     * @param array $routes
+     * @param  array $routes
      * @return ResolvedRoute|null
      */
     private static function resolveRoute(array $routes): ?ResolvedRoute
     {
-        $routeMatches = static function (Route $route, string $requestUri, array|null &$matches) use (&$argNames): bool
-        {
+        $routeMatches = static function (
+            Route $route,
+            string $requestUri,
+            array|null &$matches
+        ) use (&$argNames): bool {
             $argNames = [];
 
-            $routeParts = explode("/", $route->uri);    
+            $routeParts = explode("/", $route->uri);
 
             if (count(explode("/", $requestUri)) !== count($routeParts) && !str_ends_with($route->uri, "/(.*)")) {
                 return false;
@@ -205,7 +209,7 @@ final class Router {
 
                     $argNames[] = $name;
                 }
-                
+
                 $routeParts[$key] = $part;
             }
 
@@ -229,7 +233,7 @@ final class Router {
                 continue;
             }
 
-            $args = new stdClass;
+            $args = new stdClass();
             $argsIterator = 0;
             foreach ($matches as $index => $match) {
                 if (!$index) {
@@ -248,7 +252,7 @@ final class Router {
     }
 
     /**
-     * @param class-string<Throwable> $exceptionToCatch
+     * @param class-string<Throwable>               $exceptionToCatch
      * @param class-string<RequestHandlerInterface> $controller
      */
     public static function catch(string $toCatch, string $controller, ?string $uri = "/(.*)"): Route
@@ -258,16 +262,16 @@ final class Router {
         if (!in_array($toCatch, $catchable)) {
             self::makeCatchable($toCatch);
         }
-        
+
         $route = new Route($uri, $controller, ...Methods::cases());
-        
+
         self::$catchers[$toCatch][] = &$route;
 
         return $route;
     }
 
     /**
-     * @param class-string<HttpException> $toCatch
+     * @param  class-string<HttpException> $toCatch
      * @return void
      */
     public static function makeCatchable(string $toCatch): void
@@ -277,23 +281,25 @@ final class Router {
         }
 
         if (!is_subclass_of($toCatch, HttpException::class)) {
-            throw new \InvalidArgumentException("{$toCatch} must extend ".HttpException::class);
+            throw new \InvalidArgumentException("{$toCatch} must extend " . HttpException::class);
         }
 
         self::$catchers[$toCatch] = [];
     }
 
     /**
-     * 
+     *
      */
     public static function emitHttpExceptions(int $type): void
     {
         self::$emitHttpExceptions = $type;
     }
 
-    protected static function invokeRoute(ResolvedRoute $resolvedRoute, ServerRequestInterface $request): ResponseInterface
-    {
-        $response = new Response;
+    protected static function invokeRoute(
+        ResolvedRoute $resolvedRoute,
+        ServerRequestInterface $request
+    ): ResponseInterface {
+        $response = new Response();
 
         $next = new Next($resolvedRoute->route->controller);
 
@@ -306,7 +312,7 @@ final class Router {
 
     public static function run(EmitterInterface $emitter = null): void
     {
-        self::$emitter = $emitter ?? new SapiEmitter;
+        self::$emitter = $emitter ?? new SapiEmitter();
 
         $sortByLength = function (Route $a, Route $b) {
             return (strlen($a->uri) > strlen($b->uri));
@@ -341,7 +347,7 @@ final class Router {
                 } else {
                     $class = $e::class;
 
-                    $method = match(self::$emitHttpExceptions) {
+                    $method = match (self::$emitHttpExceptions) {
                         self::EMIT_EMPTY_RESPONSE => "buildEmptyResponse",
                         self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
                         self::EMIT_JSON_RESPONSE => "buildJsonResponse",
@@ -358,6 +364,6 @@ final class Router {
             }
         }
 
-        (new SapiEmitter)->emit($response);
+        (new SapiEmitter())->emit($response);
     }
 }

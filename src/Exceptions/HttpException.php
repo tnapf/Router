@@ -8,14 +8,16 @@ use HttpSoft\Response\JsonResponse;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
-abstract class HttpException extends \Exception {
+abstract class HttpException extends \Exception
+{
     public const CODE = 500;
     public const DESCRIPTION = "";
     public const PHRASE = "";
     public const HREF = "";
 
-    public function __construct(public readonly ServerRequestInterface $request) {
-        parent::__construct(static::DESCRIPTION." ".static::HREF, static::CODE);
+    public function __construct(public readonly ServerRequestInterface $request)
+    {
+        parent::__construct(static::DESCRIPTION . " " . static::HREF, static::CODE);
     }
 
     public static function buildEmptyResponse(): EmptyResponse
@@ -39,7 +41,7 @@ abstract class HttpException extends \Exception {
         }
 
         ob_start();
-        require_once __DIR__."/HttpExceptionHtmlResponse.php";
+        include_once __DIR__ . "/HttpExceptionHtmlResponse.php";
         $html = ob_get_clean();
 
         return new HtmlResponse($html, static::CODE);
