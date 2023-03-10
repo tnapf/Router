@@ -7,9 +7,6 @@ use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Router;
 
 require_once "../../vendor/autoload.php";
-require_once "./GetCode.php";
-require_once "./ListCodes.php";
-require_once "./CatchInternalServerError.php";
 
 function getCodes(): array
 {
