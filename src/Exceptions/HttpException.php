@@ -30,11 +30,7 @@ abstract class HttpException extends \Exception {
         $phrase = static::PHRASE;
         $href = static::HREF;
 
-        if (!$code) {
-            $title = $phrase;
-        } else if (strlen($phrase)) {
-            $title = "{$code} - {$phrase}";
-        } else {
+        if (empty($phrase)) {
             throw new RuntimeException("Phrase constant is not defined.");
         }
 
@@ -42,41 +38,9 @@ abstract class HttpException extends \Exception {
             throw new RuntimeException("Description constant defined.");
         }
 
-        $phraseHtml = strlen($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
-
-        $html = <<<TEMPLATE
-        <!DOCTYPE HTML>
-        <html lang='en'>
-        <head>
-            <title>{$title}</title>
-        </head>
-        <body>
-            <style>
-                * {
-                    font-family: Arial, Helvetica, sans-serif;
-                    text-align: center;
-                }
-
-                body {
-                    background: #1b1c1d;
-                    color: white;
-                    padding-top: calc(50vh - 95px);
-                }
-
-                body > div {
-                    max-width: 90%;
-                    margin: auto;
-                    width: fit-content;
-                }
-            </style>
-            <div>
-                <h1>{$code} - {$phraseHtml}</h1>
-                <hr>
-                <p>{$description}</p>
-            </div>
-        </body>
-        </html>
-        TEMPLATE;
+        ob_start();
+        require_once __DIR__."/HttpExceptionHtmlResponse.php";
+        $html = ob_get_clean();
 
         return new HtmlResponse($html, static::CODE);
     }
