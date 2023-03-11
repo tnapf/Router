@@ -23,13 +23,13 @@ class GetCode implements RequestHandlerInterface
             if ($args->code === $code->code) {
                 if ($args->type === "json") {
                     return new JsonResponse($code);
-                } else {
-                    ob_start();
-                    require "./HtmlResponse.php";
-                    $html = ob_get_clean();
-
-                    return new HtmlResponse($html);
                 }
+
+                ob_start();
+                require "./HtmlResponse.php";
+                $html = ob_get_clean();
+
+                return new HtmlResponse($html);
             }
         }
 
