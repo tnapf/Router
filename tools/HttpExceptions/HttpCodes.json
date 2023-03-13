@@ -381,7 +381,7 @@
     },
     {
         "code": "418",
-        "phrase": "I'm a teapot",
+        "phrase": "I'm A Teapot",
         "description": "Any attempt to brew coffee with a teapot should result in the error code 418 I'm a teapot.",
         "rfc": {
             "title": "RFC2324#2.3.1",
