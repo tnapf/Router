@@ -40,6 +40,8 @@ abstract class HttpException extends \Exception
             throw new RuntimeException("Description constant defined.");
         }
 
+        $title = "{$code} - {$phrase}";
+
         ob_start();
         include_once __DIR__ . "/HttpExceptionHtmlResponse.php";
         $html = ob_get_clean();
