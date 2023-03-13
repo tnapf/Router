@@ -2,59 +2,48 @@
 
 namespace Tnapf\Router\Routing;
 
-use Closure;
 use InvalidArgumentException;
-use ReflectionMethod;
 use stdClass;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Router;
+use Tnapf\Router\Interfaces\RequestHandlerInterface;
 
-class Route {
+class Route
+{
     public readonly string $uri;
     private array $methods;
-    private array $before = [];
-    private array $after = [];
+
+    /**
+     * @var RequestHandlerInterface[]
+     */
+    private array $middleware = [];
+
+    /**
+     * @var RequestHandlerInterface[]
+     */
+    private array $postware = [];
     private stdClass $parameters;
 
-   /**
-    * @param string $uri
-    * @param array|Closure $controller
-    * @param Methods ...$methods
-    */
-    public function __construct(string $uri, public readonly array|Closure $controller, Methods ...$methods) {
+    /**
+     * @param string                                $uri
+     * @param class-string<RequestHandlerInterface> $controller
+     * @param Methods                               ...$methods
+     */
+    public function __construct(string $uri, public readonly string $controller, Methods ...$methods)
+    {
         if (!str_starts_with($uri, "/")) {
             $uri = "/{$uri}";
         }
 
-        $this->uri = Router::getBaseUri()."$uri";
+        if (!is_subclass_of($controller, RequestHandlerInterface::class)) {
+            throw new InvalidArgumentException("{$controller} must implement " . RequestHandlerInterface::class);
+        }
 
-        $this->parameters = new stdClass;
+        $this->uri = Router::getBaseUri() . "$uri";
 
-        self::validateController($controller);
+        $this->parameters = new stdClass();
 
         $this->methods = $methods;
-    }
-
-
-    /**
-     * @param array|Closure $controller
-     * @return void
-     * 
-     * @throws InvalidArgumentException
-     */
-    private static function validateController(array|Closure $controller): void
-    {
-        if (!is_array($controller)) {
-            return;
-        }
-
-        $fullMethod = "{$controller[0]}::{$controller[1]}";
-        
-        if (!method_exists($controller[0], $controller[1])) {
-            throw new InvalidArgumentException("{$fullMethod} doesn't exist");
-        } else if (!(new ReflectionMethod($controller[0], $controller[1]))->isStatic()) {
-            throw new InvalidArgumentException("{$fullMethod} is not a static method");
-        }
     }
 
     public function getParameter(string $name): ?string
@@ -69,36 +58,54 @@ class Route {
         return $this;
     }
 
-    public function before(array|Closure ...$controllers): self
+    /**
+     * @param  class-string<RequestHandlerInterface> ...$middlewares
+     * @return self
+     */
+    public function addMiddleware(string ...$middlewares): self
     {
-        foreach ($controllers as $controller) {
-            self::validateController($controller);
+        foreach ($middlewares as $middleware) {
+            if (!is_subclass_of($middleware, RequestHandlerInterface::class)) {
+                throw new InvalidArgumentException("{$middleware} must implement " . RequestHandlerInterface::class);
+            }
 
-            $this->before[] = $controller;
+            $this->middleware[] = $middleware;
         }
 
         return $this;
     }
 
-    public function after(array|Closure ...$controllers): self
+    /**
+     * @param  class-string<RequestHandlerInterface> ...$postwares
+     * @return self
+     */
+    public function addPostware(string ...$postwares): self
     {
-        foreach ($controllers as $controller) {
-            self::validateController($controller);
+        foreach ($postwares as $postware) {
+            if (!is_subclass_of($postware, RequestHandlerInterface::class)) {
+                throw new InvalidArgumentException("{$postware} must implement " . RequestHandlerInterface::class);
+            }
 
-            $this->after[] = $controller;
+            $this->postware[] = $postware;
         }
 
         return $this;
     }
 
-    public function getBefores(): array
+    /**
+     * @return RequestHandlerInterface[]
+     */
+    public function getMiddleware(): array
     {
-        return $this->before;
+        return $this->middleware;
     }
 
-    public function getAfters(): array
+    /**
+     * @return RequestHandlerInterface[]
+     */
+    public function getPostware(): array
     {
-        return $this->after;
+        return $this->postware;
     }
 
     public function acceptsMethod(Methods $method): bool

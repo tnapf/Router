@@ -6,15 +6,18 @@ use HttpSoft\Response\EmptyResponse;
 use HttpSoft\Response\HtmlResponse;
 use HttpSoft\Response\JsonResponse;
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 
-abstract class HttpException extends \Exception {
-    public const CODE = 0;
+abstract class HttpException extends \Exception
+{
+    public const CODE = 500;
     public const DESCRIPTION = "";
     public const PHRASE = "";
     public const HREF = "";
 
-    public function __construct(public readonly ServerRequestInterface $request) {
-        parent::__construct(static::DESCRIPTION." ".static::HREF, static::CODE);
+    public function __construct(public readonly ServerRequestInterface $request)
+    {
+        parent::__construct(static::DESCRIPTION . " " . static::HREF, static::CODE);
     }
 
     public static function buildEmptyResponse(): EmptyResponse
@@ -29,39 +32,19 @@ abstract class HttpException extends \Exception {
         $phrase = static::PHRASE;
         $href = static::HREF;
 
-        $html = <<<TEMPLATE
-        <!DOCTYPE HTML>
-        <html lang='en'>
-        <head>
-            <title>{$code} - {$phrase}</title>
-        </head>
-        <body>
-            <style>
-                * {
-                    font-family: Arial, Helvetica, sans-serif;
-                    text-align: center;
-                }
+        if (empty($phrase)) {
+            throw new RuntimeException("Phrase constant is not defined.");
+        }
 
-                body {
-                    background: #1b1c1d;
-                    color: white;
-                    padding-top: calc(50vh - 95px);
-                }
+        if (!strlen($description)) {
+            throw new RuntimeException("Description constant defined.");
+        }
 
-                body > div {
-                    max-width: 90%;
-                    margin: auto;
-                    width: fit-content;
-                }
-            </style>
-            <div>
-                <h1>{$code} - <a href='{$href}'>{$phrase}</a></h1>
-                <hr>
-                <p>{$description}</p>
-            </div>
-        </body>
-        </html>
-        TEMPLATE;
+        $title = "{$code} - {$phrase}";
+
+        ob_start();
+        include_once __DIR__ . "/HttpExceptionHtmlResponse.php";
+        $html = ob_get_clean();
 
         return new HtmlResponse($html, static::CODE);
     }
@@ -73,6 +56,24 @@ abstract class HttpException extends \Exception {
         $phrase = static::PHRASE;
         $href = static::HREF;
 
-        return new JsonResponse(compact("code", "description", "phrase", "href"), static::CODE);
+        if (!strlen($phrase)) {
+            throw new RuntimeException("Phrase constant is not defined.");
+        }
+
+        if (!strlen($description)) {
+            throw new RuntimeException("Description constant defined.");
+        }
+
+        $json = compact("description", "phrase");
+
+        if ($code) {
+            $json["code"] = $code;
+        }
+
+        if (strlen($href)) {
+            $json["href"] = $href;
+        }
+
+        return new JsonResponse($json, static::CODE);
     }
 }

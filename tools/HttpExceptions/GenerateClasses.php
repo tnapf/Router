@@ -11,8 +11,6 @@ abstract class Code {
     public string $mdn;
 }
 
-echo TAB.'private static array $catchers = ['.PHP_EOL;
-
 foreach ($codes as $key => $code) {
     /** @var Code $code */
 
@@ -30,24 +28,15 @@ foreach ($codes as $key => $code) {
 
 namespace <?= $namespace ?>;
 
-class <?= $className ?> extends HttpException {
+class <?= $className ?> extends HttpException
+{
     public const CODE = <?= $code->code ?>;
     public const PHRASE = "<?= $code->phrase ?>";
     public const DESCRIPTION = "<?= $code->description ?>";
     public const HREF = "<?= $code->mdn ?>";
 }
-
 <?php 
 
-file_put_contents("../src/Exceptions/$className.php", ob_get_clean());
-
-
-
-echo TAB.TAB."Exceptions\\$className::class => []";
-echo ($key !== count($codes)-1) ? ",\n" : "\n";
+file_put_contents("../../src/Exceptions/$className.php", ob_get_clean());
 
 }
-
-echo TAB."];";
-
-echo "\nBE SURE TO UPDATE 'src/Router.php:32'";

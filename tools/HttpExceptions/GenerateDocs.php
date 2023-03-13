@@ -20,4 +20,3 @@ foreach ($codes as $code) {
 <?php }
 
 file_put_contents("./HttpExceptions.md", ob_get_clean());
-
