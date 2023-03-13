@@ -1,21 +1,10 @@
 <?php
-
 /**
- * @var string|int $code
+ * @var string $title
  * @var string $phrase
  * @var string $href
  */
-
-if ($code === 0) {
-    $title = $phrase;
-} elseif (!empty($phrase)) {
-    $title = "{$code} - {$phrase}";
-}
-
-$phraseHtml = !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
-
 ?>
-
 <!DOCTYPE HTML>
 <html lang='en'>
 <head>
@@ -41,9 +30,11 @@ $phraseHtml = !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase;
         }
     </style>
     <div>
-        <h1><?php echo $code ?> - <?php echo $phraseHtml ?></h1>
+        <h1>
+            <?= $code ?> - <?= !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase; ?>
+        </h1>
         <hr>
-        <p><?php echo $description ?></p>
+        <p><?= $description ?></p>
     </div>
 </body>
 
