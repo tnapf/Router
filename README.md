@@ -4,6 +4,8 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
+- [Tnapf/Router](#tnapfrouter)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Routing](#routing)
   - [Routing Shorthands](#routing-shorthands)
@@ -292,7 +294,7 @@ Router::catch(UserNotFound::class, CatchUserNotFound::class);
 |415|[Unsupported Media Type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415)|[HttpUnsupportedMediaType](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUnsupportedMediaType.php)
 |416|[Range Not Satisfiable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/416)|[HttpRangeNotSatisfiable](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpRangeNotSatisfiable.php)
 |417|[Expectation Failed](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417)|[HttpExpectationFailed](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpExpectationFailed.php)
-|418|[I'm a teapot](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)|[HttpImateapot](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpImateapot.php)
+|418|[I'm A Teapot](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)|[HttpImATeapot](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpImATeapot.php)
 |422|[Unprocessable Entity](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/422)|[HttpUnprocessableEntity](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpUnprocessableEntity.php)
 |423|[Locked](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/423)|[HttpLocked](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpLocked.php)
 |424|[Failed Dependency](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/424)|[HttpFailedDependency](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpFailedDependency.php)
@@ -306,7 +308,7 @@ Router::catch(UserNotFound::class, CatchUserNotFound::class);
 |502|[Bad Gateway](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502)|[HttpBadGateway](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpBadGateway.php)
 |503|[Service Unavailable](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503)|[HttpServiceUnavailable](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpServiceUnavailable.php)
 |504|[Gateway Time-out](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504)|[HttpGatewayTimeout](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpGatewayTimeout.php)
-|505|[HTTP Version Not Supported](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/505)|[HttpHTTPVersionNotSupported](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpHTTPVersionNotSupported.php)
+|505|[Version Not Supported](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/505)|[HttpVersionNotSupported](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpVersionNotSupported.php)
 |506|[Variant Also Negotiates](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/506)|[HttpVariantAlsoNegotiates](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpVariantAlsoNegotiates.php)
 |507|[Insufficient Storage](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/507)|[HttpInsufficientStorage](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpInsufficientStorage.php)
 |511|[Network Authentication Required](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/511)|[HttpNetworkAuthenticationRequired](https://github.com/tnapf/Router/blob/main/src/Exceptions/HttpNetworkAuthenticationRequired.php)
