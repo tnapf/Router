@@ -26,6 +26,8 @@
     },
     "scripts": {
         "generate-exception-docs": "php tools/HttpExceptions/GenerateDocs.php",
-        "generate-exception-classes": "php tools/HttpExceptions/GenerateClasses.php"
+        "generate-exception-classes": "php tools/HttpExceptions/GenerateClasses.php",
+        "cs": "./vendor/bin/phpcs ./src ./examples --standard=psr12",
+        "csf": "./vendor/bin/phpcbf ./src ./examples --standard=psr12"
     }
 }
