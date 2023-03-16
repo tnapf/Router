@@ -314,7 +314,7 @@ final class Router
         ) use (
             &$controllers,
             &$next
-): ResponseInterface {
+        ): ResponseInterface {
             $controller = array_shift($controllers);
 
             if ($controller === null) {
