@@ -9,7 +9,6 @@ use Psr\Http\Message\ResponseInterface;
 use stdClass;
 use Tnapf\Router\Exceptions\HttpNotFound;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
-use Tnapf\Router\Routing\Next;
 
 class GetCode implements RequestHandlerInterface
 {
@@ -17,16 +16,16 @@ class GetCode implements RequestHandlerInterface
         ServerRequestInterface $request,
         ResponseInterface $response,
         stdClass $args,
-        ?Next $next = null
+        callable $next
     ): ResponseInterface {
-        foreach (getCodes() as $code) {
+        foreach (self::getCodes() as $code) {
             if ($args->code === $code->code) {
                 if ($args->type === "json") {
                     return new JsonResponse($code);
                 }
 
                 ob_start();
-                require "./HtmlResponse.php";
+                require __DIR__ . "/HtmlResponse.php";
                 $html = ob_get_clean();
 
                 return new HtmlResponse($html);
@@ -34,5 +33,10 @@ class GetCode implements RequestHandlerInterface
         }
 
         return throw new HttpNotFound($request);
+    }
+
+    public static function getCodes()
+    {
+        return json_decode(file_get_contents(__DIR__ . "/../../tools/HttpExceptions/HttpCodes.json"));
     }
 }
