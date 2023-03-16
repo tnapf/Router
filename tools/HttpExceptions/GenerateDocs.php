@@ -1,6 +1,6 @@
 <?php
 
-$codes = json_decode(file_get_contents("./HttpCodes.json"));
+$codes = json_decode(file_get_contents(__DIR__."/HttpCodes.json"));
 ob_start();
 ?>
 
@@ -19,4 +19,4 @@ foreach ($codes as $code) {
 |<?= $code->code ?>|[<?= $code->phrase ?>](<?= $code->mdn ?>)|[<?= $className ?>](https://github.com/tnapf/Router/blob/main/src/Exceptions/<?= $className ?>.php)
 <?php }
 
-file_put_contents("./HttpExceptions.md", ob_get_clean());
+file_put_contents(__DIR__."/HttpExceptions.md", ob_get_clean());
