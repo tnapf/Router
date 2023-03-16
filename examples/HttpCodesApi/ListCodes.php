@@ -7,7 +7,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use stdClass;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
-use Tnapf\Router\Routing\Next;
 
 class ListCodes implements RequestHandlerInterface
 {
@@ -15,8 +14,8 @@ class ListCodes implements RequestHandlerInterface
         ServerRequestInterface $request,
         ResponseInterface $response,
         stdClass $args,
-        ?Next $next = null
+        callable $next
     ): ResponseInterface {
-        return new JsonResponse(getCodes());
+        return new JsonResponse(GetCode::getCodes());
     }
 }
