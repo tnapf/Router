@@ -5,3 +5,6 @@
 .vscode/*
 
 tools/HttpExceptionGeneration/HttpExceptions.md
+
+index.php
+tools/HttpExceptions/HttpExceptions.md
