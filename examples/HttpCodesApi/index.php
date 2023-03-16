@@ -4,12 +4,7 @@ use HttpCodesApi\GetCode;
 use HttpCodesApi\ListCodes;
 use Tnapf\Router\Router;
 
-require_once "../../vendor/autoload.php";
-
-function getCodes(): array
-{
-    return json_decode(file_get_contents(__DIR__ . "/../../tools/HttpExceptions/HttpCodes.json"));
-}
+require_once __DIR__ . "/../../vendor/autoload.php";
 
 Router::get("/{type}/{code}", GetCode::class)
     ->setParameter("code", "[0-9]{3}")
