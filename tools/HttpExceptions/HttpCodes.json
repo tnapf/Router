@@ -521,7 +521,7 @@
     },
     {
         "code": "505",
-        "phrase": "HTTP Version Not Supported",
+        "phrase": "Version Not Supported",
         "description": "Indicates that the server does not support, or refuses to support, the protocol version that was used in the request message.",
         "rfc": {
             "title": "RFC7231#6.6.6",
