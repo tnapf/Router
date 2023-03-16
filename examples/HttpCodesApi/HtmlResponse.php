@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang='en'>
+<html lang="en">
 <head>
     <title><?= $code->code ?> - <?= $code->phrase ?></title>
 </head>
@@ -23,7 +23,7 @@
         }
     </style>
     <div>
-        <h1><?= $code->code ?> - <a href='<?= $code->mdn ?>'><?= $code->phrase ?></a></h1>
+        <h1><?= $code->code ?> - <a href="<?= $code->mdn ?>"><?= $code->phrase ?></a></h1>
         <hr>
         <p><?= $code->description ?></p>
     </div>

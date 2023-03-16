@@ -6,7 +6,7 @@
  */
 ?>
 <!DOCTYPE HTML>
-<html lang='en'>
+<html lang="en">
 <head>
     <title><?php echo $title ?></title>
 </head>
@@ -31,7 +31,7 @@
     </style>
     <div>
         <h1>
-            <?= $code ?> - <?= !empty($href) ? "<a href='{$href}'>{$phrase}</a>" : $phrase; ?>
+            <?= $code ?> - <?= !empty($href) ? "<a href=\"{$href}\">{$phrase}</a>" : $phrase; ?>
         </h1>
         <hr>
         <p><?= $description ?></p>
