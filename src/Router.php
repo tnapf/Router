@@ -301,13 +301,30 @@ final class Router
     ): ResponseInterface {
         $response = new Response();
 
-        $next = new Next($resolvedRoute->route->controller);
+        $controllers = [
+            ...$resolvedRoute->route->getMiddleware(),
+            $resolvedRoute->route->controller,
+            ...$resolvedRoute->route->getPostware()
+        ];
 
-        $next->addMiddleware(...$resolvedRoute->route->getMiddleware());
-        $next->addPostware(...$resolvedRoute->route->getPostware());
-        $next->markComplete();
+        $next = function (
+            ServerRequestInterface $request,
+            ResponseInterface $response,
+            stdClass $args
+        ) use (
+            &$controllers,
+            &$next
+): ResponseInterface {
+            $controller = array_shift($controllers);
 
-        return $next->next($request, $response, $resolvedRoute->args);
+            if ($controller === null) {
+                return $response;
+            }
+
+            return call_user_func("$controller::handle", $request, $response, $args, $next);
+        };
+
+        return $next($request, $response, $resolvedRoute->args);
     }
 
     public static function run(EmitterInterface $emitter = null): void

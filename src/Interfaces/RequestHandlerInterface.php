@@ -5,7 +5,6 @@ namespace Tnapf\Router\Interfaces;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
-use Tnapf\Router\Routing\Next;
 
 interface RequestHandlerInterface
 {
@@ -13,6 +12,6 @@ interface RequestHandlerInterface
         ServerRequestInterface $request,
         ResponseInterface $response,
         stdClass $args,
-        Next $next
+        callable $next
     ): ResponseInterface;
 }
