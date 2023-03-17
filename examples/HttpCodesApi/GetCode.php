@@ -18,25 +18,25 @@ class GetCode implements RequestHandlerInterface
         stdClass $args,
         callable $next
     ): ResponseInterface {
-        foreach (self::getCodes() as $code) {
-            if ($args->code === $code->code) {
-                if ($args->type === "json") {
-                    return new JsonResponse($code);
-                }
+        $codes = self::getCodes();
 
-                ob_start();
-                require __DIR__ . "/HtmlResponse.php";
-                $html = ob_get_clean();
-
-                return new HtmlResponse($html);
-            }
+        if (!($code = $codes[$args->code])) {
+            return throw new HttpNotFound($request);
         }
 
-        return throw new HttpNotFound($request);
+        if ($args->type === "json") {
+            return new JsonResponse($code);
+        }
+
+        ob_start();
+        require_once __DIR__ . "/HtmlResponse.php";
+        $html = ob_get_clean();
+
+        return new HtmlResponse($html);
     }
 
-    public static function getCodes()
+    public static function getCodes(): array
     {
-        return json_decode(file_get_contents(__DIR__ . "/../../tools/HttpExceptions/HttpCodes.json"));
+        return json_decode(file_get_contents(__DIR__ . "/../../tools/HttpExceptions/HttpCodes.json"), true);
     }
 }
