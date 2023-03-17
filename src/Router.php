@@ -359,20 +359,20 @@ final class Router
             }
 
             if ($resolved === null) {
-                if (!self::$emitHttpExceptions) {
+                if (!is_subclass_of($e, HttpException::class)) {
                     throw $e;
-                } else {
-                    $class = $e::class;
-
-                    $method = match (self::$emitHttpExceptions) {
-                        self::EMIT_EMPTY_RESPONSE => "buildEmptyResponse",
-                        self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
-                        self::EMIT_JSON_RESPONSE => "buildJsonResponse",
-                        default => "buildEmptyResponse"
-                    };
-
-                    $response = call_user_func("{$class}::{$method}");
                 }
+
+                $class = $e::class;
+
+                $method = match (self::$emitHttpExceptions) {
+                    self::EMIT_EMPTY_RESPONSE => "buildEmptyResponse",
+                    self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
+                    self::EMIT_JSON_RESPONSE => "buildJsonResponse",
+                    default => "buildEmptyResponse"
+                };
+
+                $response = call_user_func("{$class}::{$method}");
             }
 
             if (!isset($response)) {
