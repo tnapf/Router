@@ -20,9 +20,11 @@ class GetCode implements RequestHandlerInterface
     ): ResponseInterface {
         $codes = self::getCodes();
 
-        if (!($code = $codes[$args->code])) {
+        if (!isset($codes[$args->code])) {
             return throw new HttpNotFound($request);
         }
+
+        $code = $codes[$args->code];
 
         if ($args->type === "json") {
             return new JsonResponse($code);
