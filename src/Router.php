@@ -15,7 +15,6 @@ use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Exceptions\HttpException;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
-use Tnapf\Router\Routing\Next;
 use Tnapf\Router\Routing\Route;
 use Tnapf\Router\Routing\ResolvedRoute;
 
