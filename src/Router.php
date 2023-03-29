@@ -7,6 +7,7 @@ use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Emitter\SapiEmitter;
 use HttpSoft\Message\Response;
 use HttpSoft\ServerRequest\ServerRequestCreator;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
@@ -206,7 +207,7 @@ final class Router
             }
 
             foreach ($routeParts as $key => $part) {
-                if (substr($part, 0, 1) === "{" && substr($part, -1) === "}") {
+                if (str_starts_with($part, "{") && str_ends_with($part, "}")) {
                     $name = str_replace(["{", "}"], "", $part);
                     $part = $route->getParameter($name);
 
@@ -284,7 +285,7 @@ final class Router
         }
 
         if (!is_subclass_of($toCatch, HttpException::class)) {
-            throw new \InvalidArgumentException("{$toCatch} must extend " . HttpException::class);
+            throw new InvalidArgumentException("{$toCatch} must extend " . HttpException::class);
         }
 
         self::$catchers[$toCatch] = [];
