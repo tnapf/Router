@@ -412,6 +412,8 @@ If you would multiple routes to inherit the same prefix URI and before/after mid
 Router::group("/app", function () {
     // Routes that will after /app prepending their declared uri
 
+    Router::get("/", RequestHandlerImplementation::class); // /app would be the uri
+
     Router::group("/api", function () {
         // Routes will have /app/api prepending their declared uri
     },);
