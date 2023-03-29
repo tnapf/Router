@@ -168,7 +168,7 @@ final class Router
     {
         $oldMount = self::$group;
 
-        if (empty(self::$group['baseUri'])) {
+        if (empty(Router::getBaseUri())) {
             self::$group = compact("baseUri", "middlewares", "postwares");
         } else {
             self::$group['baseUri'] .= $baseUri;
