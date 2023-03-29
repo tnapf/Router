@@ -31,8 +31,10 @@ class Route
      */
     public function __construct(string $uri, public readonly string $controller, Methods ...$methods)
     {
-        if (!str_starts_with($uri, "/")) {
+        if (!str_starts_with($uri, "/") && empty(Router::getBaseUri())) {
             $uri = "/{$uri}";
+        } else if (!empty(Router::getBaseUri()) && str_ends_with($uri, "/")) {
+            $uri = substr($uri, 0, -1);
         }
 
         if (!is_subclass_of($controller, RequestHandlerInterface::class)) {
