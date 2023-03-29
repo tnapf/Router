@@ -41,7 +41,7 @@ class Route
             throw new InvalidArgumentException("{$controller} must implement " . RequestHandlerInterface::class);
         }
 
-        $this->uri = Router::getBaseUri() . "$uri";
+        $this->uri = Router::getBaseUri() . $uri;
 
         $this->parameters = new stdClass();
 
