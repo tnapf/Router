@@ -1,8 +1,11 @@
 # Composer
 /vendor
 
-# VSCode 
+# VSCode
 .vscode/*
+
+# JetBrains IDEs
+.idea/*
 
 tools/HttpExceptionGeneration/HttpExceptions.md
 
