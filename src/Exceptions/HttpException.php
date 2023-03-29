@@ -37,7 +37,7 @@ abstract class HttpException extends Exception
             throw new RuntimeException("Phrase constant is not defined.");
         }
 
-        if (!strlen($description)) {
+        if ($description === '') {
             throw new RuntimeException("Description constant defined.");
         }
 
@@ -57,11 +57,11 @@ abstract class HttpException extends Exception
         $phrase = static::PHRASE;
         $href = static::HREF;
 
-        if (!strlen($phrase)) {
+        if ($phrase === '') {
             throw new RuntimeException("Phrase constant is not defined.");
         }
 
-        if (!strlen($description)) {
+        if ($description === '') {
             throw new RuntimeException("Description constant defined.");
         }
 
@@ -71,7 +71,7 @@ abstract class HttpException extends Exception
             $json["code"] = $code;
         }
 
-        if (strlen($href)) {
+        if ($href !== '') {
             $json["href"] = $href;
         }
 
