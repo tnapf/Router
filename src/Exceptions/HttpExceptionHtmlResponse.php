@@ -31,7 +31,7 @@
     </style>
     <div>
         <h1>
-            <?= $code ?> - <?= !empty($href) ? "<a href=\"{$href}\">{$phrase}</a>" : $phrase; ?>
+            <?= $code ?> - <?= !empty($href) ? "<a href=\"{$href}\">{$phrase}</a>" : $phrase ?>
         </h1>
         <hr>
         <p><?= $description ?></p>
