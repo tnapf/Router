@@ -2,13 +2,14 @@
 
 namespace Tnapf\Router\Exceptions;
 
+use Exception;
 use HttpSoft\Response\EmptyResponse;
 use HttpSoft\Response\HtmlResponse;
 use HttpSoft\Response\JsonResponse;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
-abstract class HttpException extends \Exception
+abstract class HttpException extends Exception
 {
     public const CODE = 500;
     public const DESCRIPTION = "";
