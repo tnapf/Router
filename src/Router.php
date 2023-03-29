@@ -46,8 +46,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function get(string $uri, string $controller): Route
     {
@@ -60,8 +60,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function post(string $uri, string $controller): Route
     {
@@ -74,8 +74,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function put(string $uri, string $controller): Route
     {
@@ -88,8 +88,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function delete(string $uri, string $controller): Route
     {
@@ -102,8 +102,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function options(string $uri, string $controller): Route
     {
@@ -116,8 +116,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function head(string $uri, string $controller): Route
     {
@@ -130,8 +130,8 @@ final class Router
 
     /**
      * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface>
-     * @return Route
+     * @param  class-string<RequestHandlerInterface> $controller
+	 * @return Route
      */
     public static function all(string $uri, string $controller): Route
     {
@@ -146,7 +146,7 @@ final class Router
      * @param  Route $route
      * @return void
      */
-    public static function addRoute(Route &$route): void
+    public static function addRoute(Route $route): void
     {
         if (isset(self::$group)) {
             foreach (self::$group["middlewares"] ?? [] as $middlware) {
@@ -169,12 +169,12 @@ final class Router
     {
         $oldMount = self::$group;
 
-        if (empty(Router::getBaseUri())) {
+        if (empty(self::getBaseUri())) {
             self::$group = compact("baseUri", "middlewares", "postwares");
         } else {
             self::$group['baseUri'] .= $baseUri;
-            self::$group['middlewares'] = array_merge(self::$group['middlewares'], $middlewares);
-            self::$group['postwares'] = array_merge(self::$group['postwares'], $postwares);
+            self::$group['middlewares'] = [...self::$group['middlewares'], ...$middlewares];
+            self::$group['postwares'] = [...self::$group['postwares'], ...$postwares];
         }
 
         $grouping();
@@ -221,7 +221,7 @@ final class Router
 
             $pattern = preg_replace('/\/{(.*?)}/', '/(.*?)', $uri);
 
-            return boolval(preg_match_all('#^' . $pattern . '$#', $requestUri, $matches, PREG_OFFSET_CAPTURE));
+            return (bool)preg_match_all('#^' . $pattern . '$#', $requestUri, $matches, PREG_OFFSET_CAPTURE);
         };
 
         $uri = explode("?", $_SERVER["REQUEST_URI"])[0];
@@ -255,10 +255,13 @@ final class Router
         return $resolvedRoute ?? null;
     }
 
-    /**
-     * @param class-string<Throwable>               $exceptionToCatch
-     * @param class-string<RequestHandlerInterface> $controller
-     */
+
+	/**
+	 * @param string $toCatch
+	 * @param class-string $controller
+	 * @param string|null $uri
+	 * @return Route
+	 */
     public static function catch(string $toCatch, string $controller, ?string $uri = "/(.*)"): Route
     {
         $catchable = array_keys(self::$catchers);
@@ -311,7 +314,7 @@ final class Router
             ...$resolvedRoute->route->getPostware()
         ];
 
-        $next = function (
+        $next = static function (
             ServerRequestInterface $request,
             ResponseInterface $response,
             stdClass $args
@@ -335,7 +338,7 @@ final class Router
     {
         self::$emitter = $emitter ?? new SapiEmitter();
 
-        $sortByLength = function (Route $a, Route $b) {
+        $sortByLength = static function (Route $a, Route $b) {
             return (strlen($a->uri) > strlen($b->uri));
         };
 
@@ -356,7 +359,7 @@ final class Router
 
             $response = self::invokeRoute($resolved, $request);
         } catch (Throwable $e) {
-            if (in_array($e::class, array_keys(self::$catchers))) {
+            if (array_key_exists($e::class, self::$catchers)) {
                 $resolved = self::resolveRoute(self::$catchers[$e::class]);
             } else {
                 $resolved = self::resolveRoute(self::$catchers[HttpInternalServerError::class] ?? []);
@@ -370,8 +373,7 @@ final class Router
                 $class = $e::class;
 
                 $method = match (self::$emitHttpExceptions) {
-                    self::EMIT_EMPTY_RESPONSE => "buildEmptyResponse",
-                    self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
+					self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
                     self::EMIT_JSON_RESPONSE => "buildJsonResponse",
                     default => "buildEmptyResponse"
                 };
