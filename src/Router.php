@@ -157,19 +157,23 @@ final class Router
             }
         }
 
+        if (!$route->acceptsMethod(Methods::from($_SERVER["REQUEST_METHOD"]))) {
+            return;
+        }
+
         self::$routes[$route->uri] = &$route;
     }
 
-    public static function group(string $baseUri, Closure $grouping, array $middleware = [], array $postware = []): void
+    public static function group(string $baseUri, Closure $grouping, array $middlewares = [], array $postwares = []): void
     {
         $oldMount = self::$group;
 
         if (empty(self::$group['baseUri'])) {
-            self::$group = compact("baseUri", "middleware", "postware");
+            self::$group = compact("baseUri", "middlewares", "postwares");
         } else {
             self::$group['baseUri'] .= $baseUri;
-            self::$group['middlewares'] = array_merge(self::$group['middlewares'], $middleware);
-            self::$group['postwares'] = array_merge(self::$group['postwares'], $postware);
+            self::$group['middlewares'] = array_merge(self::$group['middlewares'], $middlewares);
+            self::$group['postwares'] = array_merge(self::$group['postwares'], $postwares);
         }
 
         $grouping();
