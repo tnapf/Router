@@ -359,9 +359,13 @@ final class Router
 
             $response = self::invokeRoute($resolved, $request);
         } catch (Throwable $e) {
-            if (array_key_exists($e::class, self::$catchers)) {
-                $resolved = self::resolveRoute(self::$catchers[$e::class]);
-            } else {
+            foreach (self::$catchers as $class => $catcher) {
+                if ($catcher === $e::class || is_subclass_of($e::class, $class)) {
+                    $resolved = self::resolveRoute($catcher);
+                }
+            }
+
+            if ($resolved === null) {
                 $resolved = self::resolveRoute(self::$catchers[HttpInternalServerError::class] ?? []);
             }
 
