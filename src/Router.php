@@ -156,6 +156,14 @@ final class Router
             foreach (self::$group["postwares"] ?? [] as $postware) {
                 $route->addPostware($postware);
             }
+
+            foreach (self::$group["parameters"] ?? [] as $name => $value) {
+                $route->setParameter($name, $value);
+            }
+
+            foreach (self::$group["staticArguments"] ?? [] as $name => $value) {
+                $route->addStaticArgument($name, $value);
+            }
         }
 
         if (!$route->acceptsMethod(Methods::from($_SERVER["REQUEST_METHOD"]))) {
@@ -169,16 +177,20 @@ final class Router
         string $baseUri,
         Closure $grouping,
         array $middlewares = [],
-        array $postwares = []
+        array $postwares = [],
+        array $parameters = [],
+        array $staticArguments = []
     ): void {
         $oldMount = self::$group;
 
         if (empty(self::getBaseUri())) {
-            self::$group = compact("baseUri", "middlewares", "postwares");
+            self::$group = compact("baseUri", "middlewares", "postwares", "parameters", "staticArguments");
         } else {
             self::$group['baseUri'] .= $baseUri;
             self::$group['middlewares'] = [...self::$group['middlewares'], ...$middlewares];
             self::$group['postwares'] = [...self::$group['postwares'], ...$postwares];
+            self::$group['parameters'] = [...self::$group['parameters'], ...$parameters];
+            self::$group['staticArguments'] = [...self::$group['staticArguments'], ...$staticArguments];
         }
 
         $grouping();
@@ -321,7 +333,7 @@ final class Router
             return call_user_func("$controller::handle", $request, $response, $args, $next);
         };
 
-        foreach ($resolvedRoute->route->getArguments() as $name => $value) {
+        foreach ($resolvedRoute->route->getStaticArguments() as $name => $value) {
             $resolvedRoute->args->$name = $value;
         }
 
