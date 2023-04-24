@@ -11,23 +11,31 @@ use Tnapf\Router\Router;
 
 class RenderPage implements RequestHandlerInterface
 {
-    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface
-    {
+    public static function handle(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        stdClass $args,
+        callable $next
+    ): ResponseInterface {
         $page = realpath($args->page);
         $code = $args->code ?? 200;
 
         if (!file_exists($page)) {
             throw new InvalidArgumentException("Page {$page} does not exist");
         }
-    
+
         return new HtmlResponse(file_get_contents($page), $code);
     }
 }
 
 class AnonymousRoute implements RequestHandlerInterface
 {
-    public static function handle(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface
-    {
+    public static function handle(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        stdClass $args,
+        callable $next
+    ): ResponseInterface {
         $handler = $args->handler ?? fn() => $response;
         $response = $handler($request, $response, $args, $next);
 
@@ -44,12 +52,7 @@ Router::get("/", RenderPage::class)
 ;
 
 Router::get("/users", AnonymousRoute::class)
-    ->addArgument("handler", function (
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        stdClass $args,
-        callable $next
-    ): ResponseInterface {
+    ->addArgument("handler", function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface {
         return new JsonResponse([
             "users" => [
                 [
