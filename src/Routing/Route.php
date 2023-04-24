@@ -12,6 +12,7 @@ class Route
 {
     public readonly string $uri;
     private array $methods;
+    private array $arguments = [];
 
     /**
      * @var RequestHandlerInterface[]
@@ -113,5 +114,17 @@ class Route
     public function acceptsMethod(Methods $method): bool
     {
         return in_array($method, $this->methods);
+    }
+
+    public function addArgument(string $name, string $value): self
+    {
+        $this->arguments[$name] = $value;
+
+        return $this;
+    }
+
+    public function getArguments(): array
+    {
+        return $this->arguments;
     }
 }
