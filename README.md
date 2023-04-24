@@ -4,6 +4,8 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
+- [Tnapf/Router](#tnapfrouter)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Routing](#routing)
   - [Routing Shorthands](#routing-shorthands)
@@ -416,7 +418,7 @@ Router::group("/app", function () {
     Router::group("/api", function () {
         // Routes will have /app/api prepending their declared uri
     },);
-}, [ /* middleware here */ ], [ /* postware here */ ]);
+}, [ /* middleware here */ ], [ /* postware here */ ], [ /* parameters here */ ], [ /* static arguments here */ ]);
 ```
 
 # Static Arguments
