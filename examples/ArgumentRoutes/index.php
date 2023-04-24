@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Router;
 
+// RenderPage.php
 class RenderPage implements RequestHandlerInterface
 {
     public static function handle(
@@ -28,6 +29,7 @@ class RenderPage implements RequestHandlerInterface
     }
 }
 
+// AnonymousRoute.php
 class AnonymousRoute implements RequestHandlerInterface
 {
     public static function handle(
@@ -47,12 +49,13 @@ class AnonymousRoute implements RequestHandlerInterface
     }
 }
 
+// index.php
 Router::get("/", RenderPage::class)
-    ->addArgument("page", __DIR__ . '/index.html')
+    ->addStaticArgument("page", __DIR__ . '/index.html')
 ;
 
 Router::get("/users", AnonymousRoute::class)
-    ->addArgument("handler", function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface {
+    ->addStaticArgument("handler", function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface {
         return new JsonResponse([
             "users" => [
                 [
