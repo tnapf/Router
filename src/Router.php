@@ -331,6 +331,10 @@ final class Router
             return call_user_func("$controller::handle", $request, $response, $args, $next);
         };
 
+        foreach ($resolvedRoute->route->getArguments() as $name => $value) {
+            $resolvedRoute->args->$name = $value;
+        }
+
         return $next($request, $response, $resolvedRoute->args);
     }
 

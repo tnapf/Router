@@ -116,7 +116,7 @@ class Route
         return in_array($method, $this->methods);
     }
 
-    public function addArgument(string $name, string $value): self
+    public function addArgument(string $name, mixed $value): self
     {
         $this->arguments[$name] = $value;
 
