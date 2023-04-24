@@ -34,7 +34,7 @@ class Route
     {
         if (!str_starts_with($uri, "/") && empty(Router::getBaseUri())) {
             $uri = "/{$uri}";
-        } else if (!empty(Router::getBaseUri()) && str_ends_with($uri, "/")) {
+        } elseif (!empty(Router::getBaseUri()) && str_ends_with($uri, "/")) {
             $uri = substr($uri, 0, -1);
         }
 
