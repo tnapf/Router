@@ -294,9 +294,6 @@ final class Router
         self::$catchers[$toCatch] = [];
     }
 
-    /**
-     *
-     */
     public static function emitHttpExceptions(int $type): void
     {
         self::$emitHttpExceptions = $type;
@@ -347,7 +344,7 @@ final class Router
 
         $resolved = self::resolveRoute(self::$routes);
 
-        $request = ServerRequestCreator::createFromGlobals($_SERVER);
+        $request = ServerRequestCreator::createFromGlobals();
 
         try {
             if ($resolved === null) {
