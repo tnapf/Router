@@ -4,6 +4,8 @@ Totally Not Another PHP Framework's Route Component
 
 # Table of Contents
 
+- [Tnapf/Router](#tnapfrouter)
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Routing](#routing)
   - [Routing Shorthands](#routing-shorthands)
@@ -22,6 +24,7 @@ Totally Not Another PHP Framework's Route Component
 - [Middleware](#middleware)
 - [Postware](#postware)
 - [Group routes](#group-routes)
+- [Static Arguments](#static-arguments)
 
 # Installation
 
@@ -417,3 +420,15 @@ Router::group("/app", function () {
     },);
 }, [ /* middleware here */ ], [ /* postware here */ ]);
 ```
+
+# Static Arguments
+
+If you want to pass static arguments to your controller you can do so by using the `addArgument` method on the Route object.
+
+```php
+Router::get("/staticPage", RequestHandlerImplementation::class)
+    ->addArgument("path", __DIR__ . "/index.html")
+;
+```
+
+You would then be able to access the argument in your controller like any other argument. Note that all static arguments will override any arguments that are passed in the URI.
