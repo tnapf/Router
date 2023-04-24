@@ -12,7 +12,7 @@ class Route
 {
     public readonly string $uri;
     private array $methods;
-    private array $arguments = [];
+    private array $staticArguments = [];
 
     /**
      * @var RequestHandlerInterface[]
@@ -116,15 +116,15 @@ class Route
         return in_array($method, $this->methods);
     }
 
-    public function addArgument(string $name, mixed $value): self
+    public function addStaticArgument(string $name, mixed $value): self
     {
-        $this->arguments[$name] = $value;
+        $this->staticArguments[$name] = $value;
 
         return $this;
     }
 
-    public function getArguments(): array
+    public function getStaticArguments(): array
     {
-        return $this->arguments;
+        return $this->staticArguments;
     }
 }
