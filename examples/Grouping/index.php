@@ -73,12 +73,14 @@ Router::get("/users", JsonResponseController::class)
     ->addStaticArgument("data", $users)
 ;
 
-Router::group("/users/{id}",
+Router::group(
+    "/users/{id}",
     static function () {
         Router::get("/", JsonResponseController::class)
             ->addStaticArgument("fetch", static fn(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next) => $args->user)
         ;
-    }, middlewares: [
+    },
+    middlewares: [
         ValidUserId::class,
     ],
     staticArguments: compact('users')
