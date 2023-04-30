@@ -36,7 +36,7 @@ class JsonResponseController implements RequestHandlerInterface
         stdClass $args,
         callable $next
     ): ResponseInterface {
-        $json = $args->data ?? call_user_func($args->fetch ?? fn() => null, $request, $response, $args, $next);
+        $json = $args->data ?? call_user_func($args->fetch ?? static static fn() => null, $request, $response, $args, $next);
         $code = $args->code ?? 200;
 
         if (!is_array($json) && !is_object($json)) {
@@ -58,7 +58,7 @@ class ValidUserId implements RequestHandlerInterface
     ): ResponseInterface {
         $users = $args->users;
 
-        $args->user = array_filter($users, fn(array $user) => $user["id"] === (int)$args->id);
+        $args->user = array_filter($users, static static fn(array $user) => $user["id"] === (int)$args->id);
 
         if (empty($args->user)) {
             return new JsonResponse(["error" => "User not found"], 404);
@@ -74,16 +74,14 @@ Router::get("/users", JsonResponseController::class)
 ;
 
 Router::group("/users/{id}",
-    function () {
+    static static function () {
         Router::get("/", JsonResponseController::class)
-            ->addStaticArgument("fetch", fn(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next) => $args->user)
+            ->addStaticArgument("fetch", static fn(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next) => $args->user)
         ;
     }, middlewares: [
         ValidUserId::class,
     ],
-    staticArguments: [
-        "users" => $users,
-    ]
+    staticArguments: compact('users')
 );
 
 Router::run();
