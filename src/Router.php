@@ -323,7 +323,14 @@ final class Router
             ...$resolvedRoute->route->getPostware()
         ];
 
-        $next = static function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args) use (&$controllers, &$next): ResponseInterface {
+        $next = static function (
+            ServerRequestInterface $request,
+            ResponseInterface $response,
+            stdClass $args
+        ) use (
+            &$controllers,
+            &$next
+        ): ResponseInterface {
             $controller = array_shift($controllers);
 
             if ($controller === null) {
