@@ -14,6 +14,10 @@ class TestController implements RequestHandlerInterface {
         stdClass $args,
         callable $next
     ): ResponseInterface {
+        if (isset($args->body)) {
+            $response->getBody()->write($args->body);
+        }
+
         return $response;
     }
 }
