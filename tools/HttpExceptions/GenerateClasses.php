@@ -23,6 +23,24 @@ foreach ($codes as $key => $code) {
     $parsedPhrase = preg_replace("/[^a-zA-Z]/", "", $code->phrase);
     $className = "Http".$parsedPhrase;
 
+    $psrDescription = "";
+    $words = explode(" ", $code->description);
+
+    $line = "";
+    foreach ($words as $word) {
+        if (strlen($line) > 50) {
+            $psrDescription .= $line . "\n";
+            $line = "";
+        }
+
+        $line .= $word . " ";
+    }
+
+    if (!empty($line)) {
+        $psrDescription .= $line;
+    }
+    $psrDescription = trim($psrDescription);
+
     ob_start();
     echo "<?php\n"; ?>
 
@@ -32,7 +50,7 @@ class <?= $className ?> extends HttpException
 {
     public const CODE = <?= $code->code ?>;
     public const PHRASE = "<?= $code->phrase ?>";
-    public const DESCRIPTION = "<?= $code->description ?>";
+    public const DESCRIPTION = "<?= $psrDescription ?>";
     public const HREF = "<?= $code->mdn ?>";
 }
 <?php
