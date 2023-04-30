@@ -4,6 +4,7 @@ namespace Tests\Tnapf\Router;
 
 use HttpSoft\Message\ServerRequest;
 use HttpSoft\Response\JsonResponse;
+use HttpSoft\Response\TextResponse;
 use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Router;
@@ -40,6 +41,13 @@ class RouterTests extends TestCase
                     unset($args->handler);
                     return new JsonResponse($args);
                 })
+            ,
+            Route::new("/users/{id}", TestController::class, Methods::GET)
+                ->addStaticArgument("handler", function ($req, $res, $args) {
+                    unset($args->handler);
+                    return new TextResponse("User {$args->id}");
+                })
+                ->setParameter("id", "[0-9]+")
         ];
     }
 
@@ -64,7 +72,7 @@ class RouterTests extends TestCase
         }
     }
 
-    public function testStaticRouting(): void
+    public function testStaticPatterns(): void
     {
         $this->registerTestRoutes();
         $request = new ServerRequest([], [], [], [], [], "GET", "/");
@@ -75,15 +83,31 @@ class RouterTests extends TestCase
         $this->assertEquals("index:GET", $emitter->getResponse()->getBody()->__toString(), "Static routing failed");
     }
 
-    public function testPlaceholderRouting(): void
+    public function testDynamicPatterns(): void
     {
         $this->registerTestRoutes();
-        $request = new ServerRequest([], [], [], [], [], "GET", "/testwith/test");
+        $request = new ServerRequest([], [], [], [], [], "GET", "/users/123");
         $emitter = new StoreResponseEmitter();
 
         Router::run($request, $emitter);
 
-        $this->assertEquals('{"placeholder":"test"}', $emitter->getResponse()->getBody()->__toString(), "Placeholder routing failed");
+        $this->assertEquals('User 123', $emitter->getResponse()->getBody()->__toString(), "Placeholder regex failed");
+
+        $request = $request->withUri($request->getUri()->withPath("/users/abc"));
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals(404, $emitter->getResponse()->getStatusCode(), "Response should be 404");
+    }
+
+    public function testDynamicRegexPatterns(): void
+    {
+        $request = new ServerRequest([], [], [], [], [], "GET", "/users/1");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("User 1", $emitter->getResponse()->getBody()->__toString(), "Regex routing failed");
     }
 
     public function testRoutingShorthands(): void
