@@ -2,7 +2,7 @@
 
 $codes = json_decode(file_get_contents(__DIR__."/HttpCodes.json"));
 
-define("TAB", "    ");
+const TAB = "    ";
 
 abstract class Code {
     public string $code;
@@ -19,11 +19,11 @@ foreach ($codes as $key => $code) {
     }
 
     $namespace = "Tnapf\Router\Exceptions";
-    
+
     $parsedPhrase = preg_replace("/[^a-zA-Z]/", "", $code->phrase);
     $className = "Http".$parsedPhrase;
 
-    ob_start(); 
+    ob_start();
     echo "<?php\n"; ?>
 
 namespace <?= $namespace ?>;
@@ -35,8 +35,8 @@ class <?= $className ?> extends HttpException
     public const DESCRIPTION = "<?= $code->description ?>";
     public const HREF = "<?= $code->mdn ?>";
 }
-<?php 
+<?php
 
-file_put_contents(__DIR__."/../../src/Exceptions/$className.php", ob_get_clean());
+file_put_contents(__DIR__."/../../src/Exceptions/{$className}.php", ob_get_clean());
 
 }
