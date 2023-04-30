@@ -209,12 +209,12 @@ final class Router
      */
     private static function resolveRoute(array $routes): ?ResolvedRoute
     {
-        $routeMatches = static function (Route $route, string $requestUri, array|null &$matches) use (&$argNames): bool {
+        $routeMatches = static function (Route $route, string $requestUri, ?array &$matches) use (&$argNames): bool {
             $argNames = [];
 
             $routeParts = explode("/", $route->uri);
 
-            if (count(explode("/", $requestUri)) !== count($routeParts) && !str_ends_with($route->uri, "/(.*)")) {
+            if (!str_ends_with($route->uri, "/(.*)") && count(explode("/", $requestUri)) !== count($routeParts)) {
                 return false;
             }
 
@@ -330,7 +330,7 @@ final class Router
                 return $response;
             }
 
-            return call_user_func("$controller::handle", $request, $response, $args, $next);
+            return call_user_func("{$controller}::handle", $request, $response, $args, $next);
         };
 
         foreach ($resolvedRoute->route->getStaticArguments() as $name => $value) {
@@ -340,7 +340,7 @@ final class Router
         return $next($request, $response, $resolvedRoute->args);
     }
 
-    public static function run(EmitterInterface $emitter = null): void
+    public static function run(?EmitterInterface $emitter = null): void
     {
         self::$emitter = $emitter ?? new SapiEmitter();
 
@@ -351,6 +351,7 @@ final class Router
         foreach (self::$catchers as &$catcher) {
             usort($catcher, $sortByLength);
         }
+        unset($catcher);
 
         usort(self::$routes, $sortByLength);
 
