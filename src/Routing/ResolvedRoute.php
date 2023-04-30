@@ -7,7 +7,7 @@ use stdClass;
 readonly class ResolvedRoute
 {
     public function __construct(
-        public Route    $route,
+        public Route $route,
         public stdClass $args
     ) {
     }
