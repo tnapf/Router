@@ -4,11 +4,11 @@ namespace Tnapf\Router\Routing;
 
 use stdClass;
 
-readonly class ResolvedRoute
+class ResolvedRoute
 {
     public function __construct(
-        public Route $route,
-        public stdClass $args
+        public readonly Route $route,
+        public readonly stdClass $args
     ) {
     }
 }
