@@ -29,14 +29,8 @@ class Router
      * @var Route[]
      */
     protected static array $routes = [];
-
     protected static array $group = [];
-
     protected static ?EmitterInterface $emitter = null;
-
-    /**
-     * @var int The type of emit
-     */
     protected static int $emitHttpExceptions = 0;
 
     /**
@@ -44,11 +38,6 @@ class Router
      */
     protected static array $catchers = [];
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
     public static function get(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::GET);
@@ -58,11 +47,6 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
     public static function post(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::POST);
@@ -72,11 +56,6 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
     public static function put(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::PUT);
@@ -86,11 +65,15 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
+    public static function patch(string $uri, string $controller): Route
+    {
+        $route = new Route($uri, $controller, Methods::PATCH);
+
+        self::addRoute($route);
+
+        return $route;
+    }
+
     public static function delete(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::DELETE);
@@ -100,11 +83,7 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
+
     public static function options(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::OPTIONS);
@@ -114,11 +93,7 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
+
     public static function head(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, Methods::HEAD);
@@ -128,11 +103,7 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  string                                $uri
-     * @param  class-string<RequestHandlerInterface> $controller
-     * @return Route
-     */
+
     public static function all(string $uri, string $controller): Route
     {
         $route = new Route($uri, $controller, ...Methods::cases());
@@ -142,10 +113,7 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  Route $route
-     * @return void
-     */
+
     public static function addRoute(Route $route): void
     {
         if (isset(self::$group)) {
@@ -263,13 +231,6 @@ class Router
         return $resolvedRoute ?? null;
     }
 
-
-    /**
-     * @param string $toCatch
-     * @param class-string $controller
-     * @param string|null $uri
-     * @return Route
-     */
     public static function catch(string $toCatch, string $controller, ?string $uri = "/(.*)"): Route
     {
         $catchable = array_keys(self::$catchers);
@@ -285,10 +246,6 @@ class Router
         return $route;
     }
 
-    /**
-     * @param  class-string<HttpException> $toCatch
-     * @return void
-     */
     public static function makeCatchable(string $toCatch): void
     {
         if (isset(self::$catchers[$toCatch])) {
