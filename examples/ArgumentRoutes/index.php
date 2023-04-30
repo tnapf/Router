@@ -38,7 +38,7 @@ class AnonymousRoute implements RequestHandlerInterface
         stdClass $args,
         callable $next
     ): ResponseInterface {
-        $handler = $args->handler ?? fn() => $response;
+        $handler = $args->handler ?? static static fn() => $response;
         $response = $handler($request, $response, $args, $next);
 
         if (!$response instanceof ResponseInterface) {
@@ -55,7 +55,7 @@ Router::get("/", RenderPage::class)
 ;
 
 Router::get("/users", AnonymousRoute::class)
-    ->addStaticArgument("handler", function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface {
+    ->addStaticArgument("handler", static function (ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next): ResponseInterface {
         return new JsonResponse([
             "users" => [
                 [
