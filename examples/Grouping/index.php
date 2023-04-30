@@ -36,7 +36,7 @@ class JsonResponseController implements RequestHandlerInterface
         stdClass $args,
         callable $next
     ): ResponseInterface {
-        $json = $args->data ?? call_user_func($args->fetch ?? static static fn() => null, $request, $response, $args, $next);
+        $json = $args->data ?? call_user_func($args->fetch ?? static fn() => null, $request, $response, $args, $next);
         $code = $args->code ?? 200;
 
         if (!is_array($json) && !is_object($json)) {
@@ -58,7 +58,7 @@ class ValidUserId implements RequestHandlerInterface
     ): ResponseInterface {
         $users = $args->users;
 
-        $args->user = array_filter($users, static static fn(array $user) => $user["id"] === (int)$args->id);
+        $args->user = array_filter($users, static fn(array $user) => $user["id"] === (int)$args->id);
 
         if (empty($args->user)) {
             return new JsonResponse(["error" => "User not found"], 404);
@@ -74,7 +74,7 @@ Router::get("/users", JsonResponseController::class)
 ;
 
 Router::group("/users/{id}",
-    static static function () {
+    static function () {
         Router::get("/", JsonResponseController::class)
             ->addStaticArgument("fetch", static fn(ServerRequestInterface $request, ResponseInterface $response, stdClass $args, callable $next) => $args->user)
         ;
