@@ -38,7 +38,7 @@ class AnonymousRoute implements RequestHandlerInterface
         stdClass $args,
         callable $next
     ): ResponseInterface {
-        $handler = $args->handler ?? static static fn() => $response;
+        $handler = $args->handler ?? static fn() => $response;
         $response = $handler($request, $response, $args, $next);
 
         if (!$response instanceof ResponseInterface) {
