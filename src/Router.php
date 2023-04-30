@@ -19,7 +19,7 @@ use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Routing\Route;
 use Tnapf\Router\Routing\ResolvedRoute;
 
-final class Router
+class Router
 {
     public const EMIT_EMPTY_RESPONSE = 1;
     public const EMIT_HTML_RESPONSE = 2;
@@ -166,11 +166,7 @@ final class Router
             }
         }
 
-        if (!$route->acceptsMethod(Methods::from($_SERVER["REQUEST_METHOD"]))) {
-            return;
-        }
-
-        self::$routes[$route->uri] = &$route;
+        self::$routes[] = &$route;
     }
 
     public static function group(
@@ -207,7 +203,7 @@ final class Router
      * @param  array $routes
      * @return ResolvedRoute|null
      */
-    private static function resolveRoute(array $routes): ?ResolvedRoute
+    protected static function resolveRoute(array $routes, ServerRequestInterface $request): ?ResolvedRoute
     {
         $routeMatches = static function (Route $route, string $requestUri, ?array &$matches) use (&$argNames): bool {
             $argNames = [];
@@ -236,9 +232,9 @@ final class Router
             return (bool) preg_match_all('#^' . $pattern . '$#', $requestUri, $matches, PREG_OFFSET_CAPTURE);
         };
 
-        $uri = explode("?", $_SERVER["REQUEST_URI"])[0];
+        $uri = explode("?", $request->getRequestTarget())[0];
 
-        $method = Methods::from($_SERVER["REQUEST_METHOD"]);
+        $method = Methods::from($request->getMethod());
 
         foreach ($routes as $route) {
             $matches = [];
@@ -306,6 +302,30 @@ final class Router
         self::$catchers[$toCatch] = [];
     }
 
+    /**
+     * @return Route[]
+     */
+    public static function getRoutes(bool $sort = true): array
+    {
+        if ($sort) {
+            self::sortRoutesAndCatchers();
+        }
+
+        return self::$routes;
+    }
+
+    /**
+     * @return Route[][]
+     */
+    public static function getCatchers(bool $sort = true): array
+    {
+        if ($sort) {
+            self::sortRoutesAndCatchers();
+        }
+
+        return self::$catchers;
+    }
+
     public static function emitHttpExceptions(int $type): void
     {
         self::$emitHttpExceptions = $type;
@@ -347,10 +367,8 @@ final class Router
         return $next($request, $response, $resolvedRoute->args);
     }
 
-    public static function run(?EmitterInterface $emitter = null): void
+    protected static function sortRoutesAndCatchers(): void
     {
-        self::$emitter = $emitter ?? new SapiEmitter();
-
         $sortByLength = static function (Route $a, Route $b) {
             return (strlen($a->uri) > strlen($b->uri));
         };
@@ -358,13 +376,19 @@ final class Router
         foreach (self::$catchers as &$catcher) {
             usort($catcher, $sortByLength);
         }
+
         unset($catcher);
 
         usort(self::$routes, $sortByLength);
+    }
 
-        $resolved = self::resolveRoute(self::$routes);
-
-        $request = ServerRequestCreator::createFromGlobals();
+    public static function run(?ServerRequestInterface $request = null, ?EmitterInterface $emitter = null): void
+    {
+        self::$emitter = $emitter ?? new SapiEmitter();
+        $routes = self::getRoutes();
+        $catchers = self::getCatchers(false);
+        $request ??= ServerRequestCreator::createFromGlobals();
+        $resolved = self::resolveRoute($routes, $request);
 
         try {
             if ($resolved === null) {
@@ -373,10 +397,10 @@ final class Router
 
             $response = self::invokeRoute($resolved, $request);
         } catch (Throwable $e) {
-            if (array_key_exists($e::class, self::$catchers)) {
-                $resolved = self::resolveRoute(self::$catchers[$e::class]);
+            if (array_key_exists($e::class, $catchers)) {
+                $resolved = self::resolveRoute($catchers[$e::class], $request);
             } else {
-                $resolved = self::resolveRoute(self::$catchers[HttpInternalServerError::class] ?? []);
+                $resolved = self::resolveRoute($catchers[HttpInternalServerError::class] ?? [], $request);
             }
 
             if ($resolved === null) {
@@ -401,6 +425,6 @@ final class Router
             }
         }
 
-        (new SapiEmitter())->emit($response);
+        self::$emitter->emit($response);
     }
 }
