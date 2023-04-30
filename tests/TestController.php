@@ -18,6 +18,10 @@ class TestController implements RequestHandlerInterface {
             $response->getBody()->write($args->body);
         }
 
+        if (isset($args->handler)) {
+            $response = call_user_func($args->handler, $request, $response, $args);
+        }
+
         return $response;
     }
 }
