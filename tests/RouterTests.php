@@ -267,7 +267,7 @@ class RouterTests extends TestCase
         Router::catch(HttpUnauthorized::class, TestController::class);
         Router::catch(HttpUnauthorized::class, TestController::class);
 
-        $this->assertEquals(1, count(Router::getCatchers()), "Catcher registered twice");
+        $this->assertCount(1, Router::getCatchers(), "Catcher registered twice");
     }
 
     public function testThrowingNonHttpException(): void
