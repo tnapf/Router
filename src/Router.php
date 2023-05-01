@@ -30,7 +30,6 @@ class Router
      */
     protected static array $routes = [];
     protected static array $group = [];
-    protected static ?EmitterInterface $emitter = null;
     protected static int $emitHttpExceptions = 0;
 
     /**
@@ -339,9 +338,25 @@ class Router
         usort(self::$routes, $sortByLength);
     }
 
+    public static function clearRoutes(): void
+    {
+        self::$routes = [];
+    }
+
+    public static function clearCatchers(): void
+    {
+        self::$catchers = [];
+    }
+
+    public static function clearAll(): void
+    {
+        self::clearRoutes();
+        self::clearCatchers();
+    }
+
     public static function run(?ServerRequestInterface $request = null, ?EmitterInterface $emitter = null): void
     {
-        self::$emitter = $emitter ?? new SapiEmitter();
+        $emitter ??= new SapiEmitter();
         $routes = self::getRoutes();
         $catchers = self::getCatchers(false);
         $request ??= ServerRequestCreator::createFromGlobals();
@@ -354,11 +369,10 @@ class Router
 
             $response = self::invokeRoute($resolved, $request);
         } catch (Throwable $e) {
-            if (array_key_exists($e::class, $catchers)) {
-                $resolved = self::resolveRoute($catchers[$e::class], $request);
-            } else {
-                $resolved = self::resolveRoute($catchers[HttpInternalServerError::class] ?? [], $request);
-            }
+            $resolved = array_key_exists($e::class, $catchers) ?
+                self::resolveRoute($catchers[$e::class], $request) :
+                self::resolveRoute($catchers[HttpInternalServerError::class] ?? [], $request)
+            ;
 
             if ($resolved === null) {
                 if (!is_subclass_of($e, HttpException::class)) {
@@ -382,6 +396,6 @@ class Router
             }
         }
 
-        self::$emitter->emit($response);
+        $emitter->emit($response);
     }
 }
