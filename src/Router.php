@@ -166,7 +166,8 @@ class Router
     }
 
     /**
-     * @param  array $routes
+     * @param array $routes
+     * @param ServerRequestInterface $request
      * @return ResolvedRoute|null
      */
     protected static function resolveRoute(array $routes, ServerRequestInterface $request): ?ResolvedRoute
