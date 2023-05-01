@@ -1,8 +1,18 @@
-<phpunit cacheResult='false' colors='true'>
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+    beStrictAboutOutputDuringTests="true" failOnRisky="true" failOnWarning="true"
+    cacheDirectory=".phpunit.cache">
     <testsuites>
-        <testsuite name="Application Test Suite">
+        <testsuite name="default">
             <file>tests/RouterTests.php</file>
             <file>tests/RouteTests.php</file>
         </testsuite>
     </testsuites>
+    <coverage />
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </source>
 </phpunit>
