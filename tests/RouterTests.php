@@ -7,6 +7,7 @@ use HttpSoft\Response\JsonResponse;
 use HttpSoft\Response\TextResponse;
 use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Exceptions\HttpInternalServerError;
 use Tnapf\Router\Exceptions\HttpUnauthorized;
 use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Route;
@@ -166,6 +167,9 @@ class RouterTests extends TestCase
     public function testRoutingShorthands(): void
     {
         $emitter = new StoreResponseEmitter();
+        Router::all("/all", TestController::class)
+            ->addStaticArgument("body", "all")
+        ;
 
         foreach (Methods::cases() as $methodCase) {
             $method = "\Tnapf\Router\Router::" . strtolower($methodCase->value);
@@ -179,7 +183,11 @@ class RouterTests extends TestCase
 
             $this->assertEquals("{$methodCase->value}", $emitter->getResponse()->getBody()->__toString(), "{$methodCase->value} shorthand failed");
 
-            $request = $request->withUri($request->getUri()->withPath("/"));
+            $request = $request->withUri($request->getUri()->withPath("/all"));
+
+            Router::run($request, $emitter);
+
+            $this->assertEquals("all", $emitter->getResponse()->getBody()->__toString(), "all shorthand failed");
         }
     }
 
@@ -215,6 +223,56 @@ class RouterTests extends TestCase
         $this->assertEquals("Unauthorized", $emitter->getResponse()->getBody()->__toString(), "Catching failed");
     }
 
+    public function testCatcherNotRegisteringTwice(): void
+    {
+        Router::clearAll();
+
+        Router::catch(HttpUnauthorized::class, TestController::class);
+        Router::catch(HttpUnauthorized::class, TestController::class);
+
+        $this->assertEquals(1, count(Router::getCatchers()), "Catcher registered twice");
+    }
+
+    public function testThrowingNonHttpException(): void
+    {
+        Router::clearAll();
+
+        $this->expectException(\Exception::class);
+
+        Router::get("/", TestController::class)
+            ->addStaticArgument("handler", fn($req) => throw new \Exception("Test"))
+        ;
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+    }
+
+    public function testCustomEmissionTypes(): void
+    {
+        Router::clearAll();
+
+        Router::get("/", TestController::class)
+            ->addStaticArgument("handler", fn($req) => throw new HttpInternalServerError($req))
+        ;
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/");
+        $emitter = new StoreResponseEmitter();
+
+        Router::emitHttpExceptions(Router::EMIT_JSON_RESPONSE);
+        Router::run($request, $emitter);
+
+        $expectedCode = HttpInternalServerError::CODE;
+        $expectedDescription = HttpInternalServerError::getDescription();
+        $expectedPhrase = HttpInternalServerError::PHRASE;
+        $expectedHref = HttpInternalServerError::HREF;
+        $expectedBody = "{\"description\":\"{$expectedDescription}\",\"phrase\":\"{$expectedPhrase}\",\"code\":{$expectedCode},\"href\":\"{$expectedHref}\"}";
+
+        $this->assertEquals("application/json; charset=UTF-8", $emitter->getResponse()->getHeaderLine("Content-Type"), "Custom emission type failed");
+        $this->assertEquals($expectedBody, $emitter->getResponse()->getBody()->__toString(), "Custom emission type failed");
+    }
+
     public function testCatchingSpecificUri(): void
     {
         $this->registerTestRoutes();
@@ -238,9 +296,58 @@ class RouterTests extends TestCase
 
     public function testExceptionForImproperCatcher(): void
     {
+        Router::clearAll();
         $this->expectException(\InvalidArgumentException::class);
 
         Router::catch(\stdClass::class, TestController::class);
+    }
+
+    public function testGrouping(): void
+    {
+        Router::clearAll();
+        Router::group("/users", function () {
+            Router::get("/{id}", TestController::class);
+        }, [
+            TestMiddleware::class
+        ], [
+            TestPostware::class
+        ], [
+            "id" => "[0-9]+"
+        ], [
+            "body" => "2"
+        ]);
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/users/1234");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Grouping failed");
+    }
+
+    public function testNestedGrouping(): void
+    {
+        Router::clearAll();
+        Router::group("/users", function () {
+            Router::group("/{id}", function () {
+                Router::get("/test", TestController::class);
+            });
+        }, [
+            TestMiddleware::class
+        ], [
+            TestPostware::class
+        ], [
+            "id" => "[0-9]+"
+        ], [
+            "body" => "2"
+        ]);
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/users/1234/test");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Nested grouping failed");
     }
 
     public function getAllHttpExceptionClasses(): array
