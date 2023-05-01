@@ -11,3 +11,6 @@ tools/HttpExceptionGeneration/HttpExceptions.md
 
 /index.php
 tools/HttpExceptions/HttpExceptions.md
+
+# PHP Unit
+.phpunit.cache
