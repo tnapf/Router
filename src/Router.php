@@ -15,7 +15,6 @@ use Throwable;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Exceptions\HttpException;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
-use Tnapf\Router\Interfaces\RequestHandlerInterface;
 use Tnapf\Router\Routing\Route;
 use Tnapf\Router\Routing\ResolvedRoute;
 
@@ -247,15 +246,13 @@ class Router
 
     public static function makeCatchable(string $toCatch): void
     {
-        if (isset(self::$catchers[$toCatch])) {
-            return;
-        }
+        if (!isset(self::$catchers[$toCatch])) {
+            if (!is_subclass_of($toCatch, HttpException::class)) {
+                throw new InvalidArgumentException("{$toCatch} must extend " . HttpException::class);
+            }
 
-        if (!is_subclass_of($toCatch, HttpException::class)) {
-            throw new InvalidArgumentException("{$toCatch} must extend " . HttpException::class);
+            self::$catchers[$toCatch] = [];
         }
-
-        self::$catchers[$toCatch] = [];
     }
 
     /**
