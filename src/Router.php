@@ -372,7 +372,7 @@ class Router
             ;
 
             if ($resolved === null) {
-                if (!is_subclass_of($e, HttpException::class)) {
+                if (!$e instanceof HttpException) {
                     throw $e;
                 }
 
