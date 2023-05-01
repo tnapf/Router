@@ -13,6 +13,7 @@ use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Exceptions\HttpBadGateway;
 use Tnapf\Router\Exceptions\HttpBadRequest;
 use Tnapf\Router\Exceptions\HttpConflict;
+use Tnapf\Router\Exceptions\HttpException;
 use Tnapf\Router\Exceptions\HttpExpectationFailed;
 use Tnapf\Router\Exceptions\HttpFailedDependency;
 use Tnapf\Router\Exceptions\HttpForbidden;
@@ -394,6 +395,9 @@ class RouterTests extends TestCase
         $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Nested grouping failed");
     }
 
+    /**
+     * @return HttpException[]
+     */
     public function getAllHttpExceptionClasses(): array
     {
         return [
