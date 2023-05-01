@@ -1,0 +1,8 @@
+<phpunit cacheResult='false' colors='true'>
+    <testsuites>
+        <testsuite name="Application Test Suite">
+            <file>tests/RouterTests.php</file>
+            <file>tests/RouteTests.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>

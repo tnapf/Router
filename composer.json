@@ -32,6 +32,6 @@
         "generate-exception-classes": "php tools/HttpExceptions/GenerateClasses.php",
         "cs": "./vendor/bin/phpcs ./src --standard=psr12",
         "csf": "./vendor/bin/phpcbf ./src ./examples --standard=psr12",
-        "tests": "./vendor/bin/phpunit ./tests/RouteTests.php ./tests/RouterTests.php"
+        "tests": "./vendor/bin/phpunit"
     }
 }
