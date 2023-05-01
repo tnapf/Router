@@ -7,6 +7,7 @@ use HttpSoft\Response\JsonResponse;
 use HttpSoft\Response\TextResponse;
 use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Exceptions\HttpUnauthorized;
 use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Route;
 
@@ -47,12 +48,18 @@ class RouterTests extends TestCase
                     unset($args->handler);
                     return new TextResponse("User {$args->id}");
                 })
-                ->setParameter("id", "[0-9]+")
+                ->setParameter("id", "[0-9]+"),
+            Route::new("/401", TestController::class, Methods::GET)
+                ->addStaticArgument("handler", fn($req) => throw new HttpUnauthorized($req))
+            ,
+            Route::new("/no401", TestController::class, Methods::GET)
+                ->addStaticArgument("handler", fn($req) => throw new HttpUnauthorized($req))
         ];
     }
 
     public function registerTestRoutes()
     {
+        Router::clearAll();
         foreach ($this->getTestRoutes() as $route) {
             Router::addRoute($route);
         }
@@ -125,6 +132,8 @@ class RouterTests extends TestCase
             Router::run($request, $emitter);
 
             $this->assertEquals("{$methodCase->value}", $emitter->getResponse()->getBody()->__toString(), "{$methodCase->value} shorthand failed");
+
+            $request = $request->withUri($request->getUri()->withPath("/"));
         }
     }
 
@@ -136,13 +145,56 @@ class RouterTests extends TestCase
         foreach ($this->getAllHttpExceptionClasses() as $exception) {
             Router::addRoute(
                 Route::new("/route", TestController::class, Methods::GET)
-                    ->addStaticArgument("handler", fn($req, $res) => throw new $exception($req, $res))
+                    ->addStaticArgument("handler", fn($req) => throw new $exception($req))
             );
 
             Router::run($request, $emitter);
 
             $this->assertEquals($exception::CODE, $emitter->getResponse()->getStatusCode(), "{$exception} failed to throw");
         }
+    }
+
+    public function testCatching(): void
+    {
+        $this->registerTestRoutes();
+        $request = new ServerRequest([], [], [], [], [], "GET", "/401");
+        $emitter = new StoreResponseEmitter();
+
+        Router::catch(HttpUnauthorized::class, TestController::class)
+            ->addStaticArgument("body", "Unauthorized")
+        ;
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("Unauthorized", $emitter->getResponse()->getBody()->__toString(), "Catching failed");
+    }
+
+    public function testCatchingSpecificUri(): void
+    {
+        $this->registerTestRoutes();
+        $request = new ServerRequest([], [], [], [], [], "GET", "/401");
+        $emitter = new StoreResponseEmitter();
+
+        Router::catch(HttpUnauthorized::class, TestController::class, "/401")
+            ->addStaticArgument("body", "Unauthorized")
+        ;
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("Unauthorized", $emitter->getResponse()->getBody()->__toString(), "Catching failed");
+
+        $request = $request->withUri($request->getUri()->withPath("/no401"));
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals(401, $emitter->getResponse()->getStatusCode(), "Response should be 401");
+    }
+
+    public function testExceptionForImproperCatcher(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        Router::catch(\stdClass::class, TestController::class);
     }
 
     public function getAllHttpExceptionClasses(): array
