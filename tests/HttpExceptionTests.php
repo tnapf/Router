@@ -7,14 +7,14 @@ use Tnapf\Router\Exceptions\HttpInternalServerError;
 class HttpExceptionTests extends TestCase {
     public function testMissingPhrase(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         MissingPhraseHttpException::buildJsonResponse();
     }
 
     public function testMissingDescription(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         MissingDescriptionHttpException::buildHtmlResponse();
     }

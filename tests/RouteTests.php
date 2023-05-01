@@ -2,6 +2,7 @@
 
 namespace Tests\Tnapf\Router;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Routing\Route;
@@ -10,7 +11,7 @@ class RouteTests extends TestCase
 {
     public function createBasicRoute(Methods...$methods): Route
     {
-        return new Route("home", \Tests\Tnapf\Router\TestController::class, ...$methods);
+        return new Route("home", TestController::class, ...$methods);
     }
 
     public function testRoutePrependsMissingStartingSlash(): void
@@ -21,7 +22,7 @@ class RouteTests extends TestCase
 
     public function testRouteRejectsInvalidController(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         new Route("/", "InvalidController");
     }
@@ -38,20 +39,20 @@ class RouteTests extends TestCase
     public function testRouteAddingPostware(): void
     {
         $route = $this->createBasicRoute();
-        $route->addPostware(\Tests\Tnapf\Router\TestController::class);
-        $this->assertEquals(\Tests\Tnapf\Router\TestController::class, $route->getPostware()[0], "Route should add postware");
+        $route->addPostware(TestController::class);
+        $this->assertEquals(TestController::class, $route->getPostware()[0], "Route should add postware");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $route->addPostware("InvalidController");
     }
 
     public function testRouteAddingMiddleware(): void
     {
         $route = $this->createBasicRoute();
-        $route->addMiddleware(\Tests\Tnapf\Router\TestController::class);
-        $this->assertEquals(\Tests\Tnapf\Router\TestController::class, $route->getMiddleware()[0], "Route should add middleware");
+        $route->addMiddleware(TestController::class);
+        $this->assertEquals(TestController::class, $route->getMiddleware()[0], "Route should add middleware");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $route->addMiddleware("InvalidController");
     }
 
