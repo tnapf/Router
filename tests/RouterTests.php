@@ -307,6 +307,9 @@ class RouterTests extends TestCase
         Router::clearAll();
         Router::group("/users", function () {
             Router::get("/{id}", TestController::class);
+            Router::get("/", TestController::class)
+                ->addStaticArgument("body", "1")
+            ;
         }, [
             TestMiddleware::class
         ], [
@@ -323,6 +326,12 @@ class RouterTests extends TestCase
         Router::run($request, $emitter);
 
         $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Grouping failed");
+
+        $request = $request->withUri($request->getUri()->withPath("/users"));
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("113", $emitter->getResponse()->getBody()->__toString(), "Grouping failed");
     }
 
     public function testNestedGrouping(): void
