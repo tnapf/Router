@@ -7,6 +7,7 @@
         <testsuite name="default">
             <file>tests/RouterTests.php</file>
             <file>tests/RouteTests.php</file>
+            <file>tests/HttpExceptionTests.php</file>
         </testsuite>
     </testsuites>
     <coverage />
