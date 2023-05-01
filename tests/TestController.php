@@ -22,6 +22,6 @@ class TestController implements RequestHandlerInterface {
             $response = call_user_func($args->handler, $request, $response, $args);
         }
 
-        return $response;
+        return $next($request, $response, $args, $next);
     }
 }
