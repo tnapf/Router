@@ -2,13 +2,50 @@
 
 namespace Tests\Tnapf\Router;
 
+use Exception;
 use HttpSoft\Message\ServerRequest;
 use HttpSoft\Response\JsonResponse;
 use HttpSoft\Response\TextResponse;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Exceptions\HttpBadGateway;
+use Tnapf\Router\Exceptions\HttpBadRequest;
+use Tnapf\Router\Exceptions\HttpConflict;
+use Tnapf\Router\Exceptions\HttpExpectationFailed;
+use Tnapf\Router\Exceptions\HttpFailedDependency;
+use Tnapf\Router\Exceptions\HttpForbidden;
+use Tnapf\Router\Exceptions\HttpGatewayTimeout;
+use Tnapf\Router\Exceptions\HttpGone;
+use Tnapf\Router\Exceptions\HttpImATeapot;
+use Tnapf\Router\Exceptions\HttpInsufficientStorage;
 use Tnapf\Router\Exceptions\HttpInternalServerError;
+use Tnapf\Router\Exceptions\HttpLengthRequired;
+use Tnapf\Router\Exceptions\HttpLocked;
+use Tnapf\Router\Exceptions\HttpMethodNotAllowed;
+use Tnapf\Router\Exceptions\HttpNetworkAuthenticationRequired;
+use Tnapf\Router\Exceptions\HttpNotAcceptable;
+use Tnapf\Router\Exceptions\HttpNotFound;
+use Tnapf\Router\Exceptions\HttpNotImplemented;
+use Tnapf\Router\Exceptions\HttpPayloadTooLarge;
+use Tnapf\Router\Exceptions\HttpPaymentRequired;
+use Tnapf\Router\Exceptions\HttpPreconditionFailed;
+use Tnapf\Router\Exceptions\HttpPreconditionRequired;
+use Tnapf\Router\Exceptions\HttpProxyAuthenticationRequired;
+use Tnapf\Router\Exceptions\HttpRangeNotSatisfiable;
+use Tnapf\Router\Exceptions\HttpRequestHeaderFieldsTooLarge;
+use Tnapf\Router\Exceptions\HttpRequestTimeout;
+use Tnapf\Router\Exceptions\HttpServiceUnavailable;
+use Tnapf\Router\Exceptions\HttpTooManyRequests;
 use Tnapf\Router\Exceptions\HttpUnauthorized;
+use Tnapf\Router\Exceptions\HttpUnavailableForLegalReasons;
+use Tnapf\Router\Exceptions\HttpUnprocessableEntity;
+use Tnapf\Router\Exceptions\HttpUnsupportedMediaType;
+use Tnapf\Router\Exceptions\HttpUpgradeRequired;
+use Tnapf\Router\Exceptions\HttpURITooLong;
+use Tnapf\Router\Exceptions\HttpVariantAlsoNegotiates;
+use Tnapf\Router\Exceptions\HttpVersionNotSupported;
 use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Route;
 
@@ -237,10 +274,10 @@ class RouterTests extends TestCase
     {
         Router::clearAll();
 
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
 
         Router::get("/", TestController::class)
-            ->addStaticArgument("handler", static fn($req) => throw new \Exception("Test"))
+            ->addStaticArgument("handler", static fn($req) => throw new Exception("Test"))
         ;
 
         $request = new ServerRequest([], [], [], [], [], "GET", "/");
@@ -297,9 +334,9 @@ class RouterTests extends TestCase
     public function testExceptionForImproperCatcher(): void
     {
         Router::clearAll();
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
-        Router::catch(\stdClass::class, TestController::class);
+        Router::catch(stdClass::class, TestController::class);
     }
 
     public function testGrouping(): void
@@ -360,42 +397,42 @@ class RouterTests extends TestCase
     public function getAllHttpExceptionClasses(): array
     {
         return [
-            \Tnapf\Router\Exceptions\HttpBadRequest::class,
-            \Tnapf\Router\Exceptions\HttpUnauthorized::class,
-            \Tnapf\Router\Exceptions\HttpPaymentRequired::class,
-            \Tnapf\Router\Exceptions\HttpForbidden::class,
-            \Tnapf\Router\Exceptions\HttpNotFound::class,
-            \Tnapf\Router\Exceptions\HttpMethodNotAllowed::class,
-            \Tnapf\Router\Exceptions\HttpNotAcceptable::class,
-            \Tnapf\Router\Exceptions\HttpProxyAuthenticationRequired::class,
-            \Tnapf\Router\Exceptions\HttpRequestTimeout::class,
-            \Tnapf\Router\Exceptions\HttpConflict::class,
-            \Tnapf\Router\Exceptions\HttpGone::class,
-            \Tnapf\Router\Exceptions\HttpLengthRequired::class,
-            \Tnapf\Router\Exceptions\HttpPreconditionFailed::class,
-            \Tnapf\Router\Exceptions\HttpPayloadTooLarge::class,
-            \Tnapf\Router\Exceptions\HttpURITooLong::class,
-            \Tnapf\Router\Exceptions\HttpUnsupportedMediaType::class,
-            \Tnapf\Router\Exceptions\HttpRangeNotSatisfiable::class,
-            \Tnapf\Router\Exceptions\HttpExpectationFailed::class,
-            \Tnapf\Router\Exceptions\HttpImATeapot::class,
-            \Tnapf\Router\Exceptions\HttpUnprocessableEntity::class,
-            \Tnapf\Router\Exceptions\HttpLocked::class,
-            \Tnapf\Router\Exceptions\HttpFailedDependency::class,
-            \Tnapf\Router\Exceptions\HttpUpgradeRequired::class,
-            \Tnapf\Router\Exceptions\HttpPreconditionRequired::class,
-            \Tnapf\Router\Exceptions\HttpTooManyRequests::class,
-            \Tnapf\Router\Exceptions\HttpRequestHeaderFieldsTooLarge::class,
-            \Tnapf\Router\Exceptions\HttpUnavailableForLegalReasons::class,
-            \Tnapf\Router\Exceptions\HttpInternalServerError::class,
-            \Tnapf\Router\Exceptions\HttpNotImplemented::class,
-            \Tnapf\Router\Exceptions\HttpBadGateway::class,
-            \Tnapf\Router\Exceptions\HttpServiceUnavailable::class,
-            \Tnapf\Router\Exceptions\HttpGatewayTimeout::class,
-            \Tnapf\Router\Exceptions\HttpVersionNotSupported::class,
-            \Tnapf\Router\Exceptions\HttpVariantAlsoNegotiates::class,
-            \Tnapf\Router\Exceptions\HttpInsufficientStorage::class,
-            \Tnapf\Router\Exceptions\HttpNetworkAuthenticationRequired::class
+            HttpBadRequest::class,
+            HttpUnauthorized::class,
+            HttpPaymentRequired::class,
+            HttpForbidden::class,
+            HttpNotFound::class,
+            HttpMethodNotAllowed::class,
+            HttpNotAcceptable::class,
+            HttpProxyAuthenticationRequired::class,
+            HttpRequestTimeout::class,
+            HttpConflict::class,
+            HttpGone::class,
+            HttpLengthRequired::class,
+            HttpPreconditionFailed::class,
+            HttpPayloadTooLarge::class,
+            HttpURITooLong::class,
+            HttpUnsupportedMediaType::class,
+            HttpRangeNotSatisfiable::class,
+            HttpExpectationFailed::class,
+            HttpImATeapot::class,
+            HttpUnprocessableEntity::class,
+            HttpLocked::class,
+            HttpFailedDependency::class,
+            HttpUpgradeRequired::class,
+            HttpPreconditionRequired::class,
+            HttpTooManyRequests::class,
+            HttpRequestHeaderFieldsTooLarge::class,
+            HttpUnavailableForLegalReasons::class,
+            HttpInternalServerError::class,
+            HttpNotImplemented::class,
+            HttpBadGateway::class,
+            HttpServiceUnavailable::class,
+            HttpGatewayTimeout::class,
+            HttpVersionNotSupported::class,
+            HttpVariantAlsoNegotiates::class,
+            HttpInsufficientStorage::class,
+            HttpNetworkAuthenticationRequired::class
         ];
     }
 }
