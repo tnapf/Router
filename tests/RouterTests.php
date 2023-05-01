@@ -90,6 +90,52 @@ class RouterTests extends TestCase
         $this->assertEquals("index:GET", $emitter->getResponse()->getBody()->__toString(), "Static routing failed");
     }
 
+    public function testMiddleware(): void
+    {
+        Router::get("/", TestController::class)
+            ->addStaticArgument("body", "2")
+            ->addMiddleware(TestMiddleware::class)
+        ;
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("12", $emitter->getResponse()->getBody()->__toString(), "Middleware failed");
+    }
+
+    public function testPostware(): void
+    {
+        Router::get("/", TestController::class)
+            ->addStaticArgument("body", "2")
+            ->addPostware(TestPostware::class)
+        ;
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("23", $emitter->getResponse()->getBody()->__toString(), "Postware failed");
+    }
+
+    public function testPostwareAndMiddleware(): void
+    {
+        Router::get("/", TestController::class)
+            ->addStaticArgument("body", "2")
+            ->addMiddleware(TestMiddleware::class)
+            ->addPostware(TestPostware::class)
+        ;
+
+        $request = new ServerRequest([], [], [], [], [], "GET", "/");
+        $emitter = new StoreResponseEmitter();
+
+        Router::run($request, $emitter);
+
+        $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Middleware and Postware failed");
+    }
+
     public function testDynamicPatterns(): void
     {
         $this->registerTestRoutes();
