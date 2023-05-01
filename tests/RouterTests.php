@@ -305,20 +305,18 @@ class RouterTests extends TestCase
     public function testGrouping(): void
     {
         Router::clearAll();
-        Router::group("/users", function () {
-            Router::get("/{id}", TestController::class);
-            Router::get("/", TestController::class)
-                ->addStaticArgument("body", "1")
-            ;
-        }, [
-            TestMiddleware::class
-        ], [
-            TestPostware::class
-        ], [
-            "id" => "[0-9]+"
-        ], [
-            "body" => "2"
-        ]);
+        Router::group(
+            "/users",
+            function () {
+                Router::get("/{id}", TestController::class);
+                Router::get("/", TestController::class)
+                    ->addStaticArgument("body", "1");
+            },
+            [TestMiddleware::class],
+            [TestPostware::class],
+            ["id" => "[0-9]+"],
+            ["body" => "2"]
+        );
 
         $request = new ServerRequest([], [], [], [], [], "GET", "/users/1234");
         $emitter = new StoreResponseEmitter();
