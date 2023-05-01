@@ -212,7 +212,7 @@ class RouterTests extends TestCase
             $method = "\Tnapf\Router\Router::" . strtolower($methodCase->value);
             $request = new ServerRequest([], [], [], [], [], $methodCase->value, "/");
             $uri = "/";
-            call_user_func($method, $uri, TestController::class)
+            $method($uri, TestController::class)
                 ->addStaticArgument("body", $methodCase->value)
             ;
 
