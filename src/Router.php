@@ -279,6 +279,30 @@ class Router
         return self::$catchers;
     }
 
+    /**
+     * @return Route[]
+     */
+    public static function getRoutes(bool $sort = true): array
+    {
+        if ($sort) {
+            self::sortRoutesAndCatchers();
+        }
+
+        return self::$routes;
+    }
+
+    /**
+     * @return Route[][]
+     */
+    public static function getCatchers(bool $sort = true): array
+    {
+        if ($sort) {
+            self::sortRoutesAndCatchers();
+        }
+
+        return self::$catchers;
+    }
+
     public static function emitHttpExceptions(int $type): void
     {
         self::$emitHttpExceptions = $type;
