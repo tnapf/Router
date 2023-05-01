@@ -39,22 +39,22 @@ class RouterTests extends TestCase
                 ->addStaticArgument("body", "index:OPTIONS")
             ,
             Route::new("/testwith/{placeholder}", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", function ($req, $res, $args) {
+                ->addStaticArgument("handler", static function ($req, $res, $args) {
                     unset($args->handler);
                     return new JsonResponse($args);
                 })
             ,
             Route::new("/users/{id}", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", function ($req, $res, $args) {
+                ->addStaticArgument("handler", static function ($req, $res, $args) {
                     unset($args->handler);
                     return new TextResponse("User {$args->id}");
                 })
                 ->setParameter("id", "[0-9]+"),
             Route::new("/401", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", fn($req) => throw new HttpUnauthorized($req))
+                ->addStaticArgument("handler", static fn($req) => throw new HttpUnauthorized($req))
             ,
             Route::new("/no401", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", fn($req) => throw new HttpUnauthorized($req))
+                ->addStaticArgument("handler", static fn($req) => throw new HttpUnauthorized($req))
         ];
     }
 
@@ -76,7 +76,7 @@ class RouterTests extends TestCase
 
             Router::run($request, $emitter);
 
-            $this->assertEquals("index:{$method->value}", $emitter->getResponse()->getBody()->__toString(), "{$method->value} route failed to resolve");
+            $this->assertEquals("index:{$method->value}", (string)$emitter->getResponse()->getBody(), "{$method->value} route failed to resolve");
         }
     }
 
@@ -88,7 +88,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("index:GET", $emitter->getResponse()->getBody()->__toString(), "Static routing failed");
+        $this->assertEquals("index:GET", (string)$emitter->getResponse()->getBody(), "Static routing failed");
     }
 
     public function testMiddleware(): void
@@ -103,7 +103,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("12", $emitter->getResponse()->getBody()->__toString(), "Middleware failed");
+        $this->assertEquals("12", (string)$emitter->getResponse()->getBody(), "Middleware failed");
     }
 
     public function testPostware(): void
@@ -118,7 +118,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("23", $emitter->getResponse()->getBody()->__toString(), "Postware failed");
+        $this->assertEquals("23", (string)$emitter->getResponse()->getBody(), "Postware failed");
     }
 
     public function testPostwareAndMiddleware(): void
@@ -134,7 +134,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Middleware and Postware failed");
+        $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Middleware and Postware failed");
     }
 
     public function testDynamicPatterns(): void
@@ -145,7 +145,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals('User 123', $emitter->getResponse()->getBody()->__toString(), "Placeholder regex failed");
+        $this->assertEquals('User 123', (string)$emitter->getResponse()->getBody(), "Placeholder regex failed");
 
         $request = $request->withUri($request->getUri()->withPath("/users/abc"));
 
@@ -161,7 +161,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("User 1", $emitter->getResponse()->getBody()->__toString(), "Regex routing failed");
+        $this->assertEquals("User 1", (string)$emitter->getResponse()->getBody(), "Regex routing failed");
     }
 
     public function testRoutingShorthands(): void
@@ -181,13 +181,13 @@ class RouterTests extends TestCase
 
             Router::run($request, $emitter);
 
-            $this->assertEquals("{$methodCase->value}", $emitter->getResponse()->getBody()->__toString(), "{$methodCase->value} shorthand failed");
+            $this->assertEquals($methodCase->value, (string)$emitter->getResponse()->getBody(), "{$methodCase->value} shorthand failed");
 
             $request = $request->withUri($request->getUri()->withPath("/all"));
 
             Router::run($request, $emitter);
 
-            $this->assertEquals("all", $emitter->getResponse()->getBody()->__toString(), "all shorthand failed");
+            $this->assertEquals("all", (string)$emitter->getResponse()->getBody(), "all shorthand failed");
         }
     }
 
@@ -199,7 +199,7 @@ class RouterTests extends TestCase
         foreach ($this->getAllHttpExceptionClasses() as $exception) {
             Router::addRoute(
                 Route::new("/route", TestController::class, Methods::GET)
-                    ->addStaticArgument("handler", fn($req) => throw new $exception($req))
+                    ->addStaticArgument("handler", static fn($req) => throw new $exception($req))
             );
 
             Router::run($request, $emitter);
@@ -220,7 +220,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("Unauthorized", $emitter->getResponse()->getBody()->__toString(), "Catching failed");
+        $this->assertEquals("Unauthorized", (string)$emitter->getResponse()->getBody(), "Catching failed");
     }
 
     public function testCatcherNotRegisteringTwice(): void
@@ -240,7 +240,7 @@ class RouterTests extends TestCase
         $this->expectException(\Exception::class);
 
         Router::get("/", TestController::class)
-            ->addStaticArgument("handler", fn($req) => throw new \Exception("Test"))
+            ->addStaticArgument("handler", static fn($req) => throw new \Exception("Test"))
         ;
 
         $request = new ServerRequest([], [], [], [], [], "GET", "/");
@@ -254,7 +254,7 @@ class RouterTests extends TestCase
         Router::clearAll();
 
         Router::get("/", TestController::class)
-            ->addStaticArgument("handler", fn($req) => throw new HttpInternalServerError($req))
+            ->addStaticArgument("handler", static fn($req) => throw new HttpInternalServerError($req))
         ;
 
         $request = new ServerRequest([], [], [], [], [], "GET", "/");
@@ -270,7 +270,7 @@ class RouterTests extends TestCase
         $expectedBody = "{\"description\":\"{$expectedDescription}\",\"phrase\":\"{$expectedPhrase}\",\"code\":{$expectedCode},\"href\":\"{$expectedHref}\"}";
 
         $this->assertEquals("application/json; charset=UTF-8", $emitter->getResponse()->getHeaderLine("Content-Type"), "Custom emission type failed");
-        $this->assertEquals($expectedBody, $emitter->getResponse()->getBody()->__toString(), "Custom emission type failed");
+        $this->assertEquals($expectedBody, (string)$emitter->getResponse()->getBody(), "Custom emission type failed");
     }
 
     public function testCatchingSpecificUri(): void
@@ -285,7 +285,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("Unauthorized", $emitter->getResponse()->getBody()->__toString(), "Catching failed");
+        $this->assertEquals("Unauthorized", (string)$emitter->getResponse()->getBody(), "Catching failed");
 
         $request = $request->withUri($request->getUri()->withPath("/no401"));
 
@@ -307,7 +307,7 @@ class RouterTests extends TestCase
         Router::clearAll();
         Router::group(
             "/users",
-            function () {
+            static function () {
                 Router::get("/{id}", TestController::class);
                 Router::get("/", TestController::class)
                     ->addStaticArgument("body", "1");
@@ -323,20 +323,20 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Grouping failed");
+        $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Grouping failed");
 
         $request = $request->withUri($request->getUri()->withPath("/users"));
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("113", $emitter->getResponse()->getBody()->__toString(), "Grouping failed");
+        $this->assertEquals("113", (string)$emitter->getResponse()->getBody(), "Grouping failed");
     }
 
     public function testNestedGrouping(): void
     {
         Router::clearAll();
-        Router::group("/users", function () {
-            Router::group("/{id}", function () {
+        Router::group("/users", static function () {
+            Router::group("/{id}", static function () {
                 Router::get("/test", TestController::class);
             });
         }, [
@@ -354,7 +354,7 @@ class RouterTests extends TestCase
 
         Router::run($request, $emitter);
 
-        $this->assertEquals("123", $emitter->getResponse()->getBody()->__toString(), "Nested grouping failed");
+        $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Nested grouping failed");
     }
 
     public function getAllHttpExceptionClasses(): array
