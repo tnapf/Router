@@ -35,4 +35,4 @@ jobs:
       run: composer cs
 
     - name: Run Tests
-      run: composer tests
+      run: composer phpunit

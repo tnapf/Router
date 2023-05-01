@@ -32,6 +32,7 @@
         "generate-exception-classes": "php tools/HttpExceptions/GenerateClasses.php",
         "cs": "./vendor/bin/phpcs ./src --standard=psr12",
         "csf": "./vendor/bin/phpcbf ./src ./examples --standard=psr12",
-        "tests": "./vendor/bin/phpunit"
+        "phpunit": "./vendor/bin/phpunit",
+        "phpunit-coverage": "php -d xdebug.mode=coverage ./vendor/bin/phpunit --coverage-html .phpunit.cache/cov-html"
     }
 }
