@@ -18,7 +18,7 @@ abstract class HttpException extends Exception
 
     public function __construct(public readonly ServerRequestInterface $request)
     {
-        parent::__construct(static::getDescription() . " " . static::HREF, static::CODE);
+        parent::__construct(static::DESCRIPTION . " " . static::HREF, static::CODE);
     }
 
     public static function buildEmptyResponse(): EmptyResponse
@@ -26,15 +26,10 @@ abstract class HttpException extends Exception
         return new EmptyResponse(static::CODE);
     }
 
-    public static function getDescription(): string
-    {
-        return str_replace("\n", "", static::DESCRIPTION);
-    }
-
     protected static function checkConstants(): void
     {
         $code = static::CODE;
-        $description = trim(static::getDescription());
+        $description = trim(static::DESCRIPTION);
         $phrase = trim(static::PHRASE);
         $href = static::HREF;
 
@@ -51,7 +46,7 @@ abstract class HttpException extends Exception
     {
         self::checkConstants();
         $code = static::CODE;
-        $description = trim(static::getDescription());
+        $description = trim(static::DESCRIPTION);
         $phrase = trim(static::PHRASE);
         $href = static::HREF;
 
@@ -68,7 +63,7 @@ abstract class HttpException extends Exception
     {
         self::checkConstants();
         $code = static::CODE;
-        $description = trim(static::getDescription());
+        $description = trim(static::DESCRIPTION);
         $phrase = trim(static::PHRASE);
         $href = static::HREF;
 

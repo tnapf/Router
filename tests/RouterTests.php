@@ -264,7 +264,7 @@ class RouterTests extends TestCase
         Router::run($request, $emitter);
 
         $expectedCode = HttpInternalServerError::CODE;
-        $expectedDescription = HttpInternalServerError::getDescription();
+        $expectedDescription = HttpInternalServerError::DESCRIPTION;
         $expectedPhrase = HttpInternalServerError::PHRASE;
         $expectedHref = HttpInternalServerError::HREF;
         $expectedBody = "{\"description\":\"{$expectedDescription}\",\"phrase\":\"{$expectedPhrase}\",\"code\":{$expectedCode},\"href\":\"{$expectedHref}\"}";
