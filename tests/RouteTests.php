@@ -27,7 +27,7 @@ class RouteTests extends TestCase
     public function testRoutePrependsMissingStartingSlash(): void
     {
         $route = $this->createBasicRoute();
-        $this->assertEquals("/home", $route->uri, "Route should prepend missing starting slash");
+        $this->assertSame("/home", $route->uri, "Route should prepend missing starting slash");
     }
 
     public function testRouteRejectsInvalidController(): void
@@ -41,9 +41,9 @@ class RouteTests extends TestCase
     {
         $route = $this->createBasicRoute();
         $route->setParameter("id", "\d+");
-        $this->assertEquals("(\d+)", $route->getParameter("id"), "Route should set parameter");
+        $this->assertSame("(\d+)", $route->getParameter("id"), "Route should set parameter");
 
-        $this->assertEquals("{invalid}", $route->getParameter("invalid"), "Route should return the parameter name if it doesn't exist");
+        $this->assertSame("{invalid}", $route->getParameter("invalid"), "Route should return the parameter name if it doesn't exist");
     }
 
     public function testRouteAddingPostware(): void
