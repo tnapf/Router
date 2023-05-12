@@ -5,13 +5,23 @@ namespace Tests\Tnapf\Router;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Route;
 
 class RouteTests extends TestCase
 {
+    protected Router $router;
+
+    public function __construct(string $name)
+    {
+        parent::__construct($name);
+
+        $this->router = new Router();
+    }
+
     public function createBasicRoute(Methods...$methods): Route
     {
-        return new Route("home", TestController::class, ...$methods);
+        return new Route($this->router, "home", TestController::class, ...$methods);
     }
 
     public function testRoutePrependsMissingStartingSlash(): void
@@ -24,7 +34,7 @@ class RouteTests extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Route("/", "InvalidController");
+        new Route($this->router, "/", "InvalidController");
     }
 
     public function testRouteSettingGettingParameters(): void
