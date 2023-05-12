@@ -26,12 +26,17 @@ class Route
     private stdClass $parameters;
 
     /**
-     * @param string                                $uri
+     * @param Router $router
+     * @param string $uri
      * @param class-string<RequestHandlerInterface> $controller
-     * @param Methods                               ...$methods
+     * @param Methods ...$methods
      */
-    public function __construct(protected readonly Router $router, string $uri, public readonly string $controller, Methods ...$methods)
-    {
+    public function __construct(
+        protected readonly Router $router,
+        string $uri,
+        public readonly string $controller,
+        Methods ...$methods
+    ) {
         if (!str_starts_with($uri, "/") && empty($this->router->getBaseUri())) {
             $uri = "/{$uri}";
         } elseif (!empty($this->router->getBaseUri()) && str_ends_with($uri, "/")) {
@@ -49,8 +54,12 @@ class Route
         $this->methods = $methods;
     }
 
-    public static function new(Router $router, string $uri, string $controller, Methods ...$methods): self
-    {
+    public static function new(
+        Router $router,
+        string $uri,
+        string $controller,
+        Methods ...$methods
+    ): self {
         return new self($router, $uri, $controller, ...$methods);
     }
 
@@ -67,7 +76,7 @@ class Route
     }
 
     /**
-     * @param  class-string<RequestHandlerInterface> ...$middlewares
+     * @param class-string<RequestHandlerInterface> ...$middlewares
      * @return self
      */
     public function addMiddleware(string ...$middlewares): self
@@ -84,7 +93,7 @@ class Route
     }
 
     /**
-     * @param  class-string<RequestHandlerInterface> ...$postwares
+     * @param class-string<RequestHandlerInterface> ...$postwares
      * @return self
      */
     public function addPostware(string ...$postwares): self
