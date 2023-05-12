@@ -49,9 +49,9 @@ class Route
         $this->methods = $methods;
     }
 
-    public static function new(string $uri, string $controller, Methods ...$methods): self
+    public static function new(Router $router, string $uri, string $controller, Methods ...$methods): self
     {
-        return new self($uri, $controller, ...$methods);
+        return new self($router, $uri, $controller, ...$methods);
     }
 
     public function getParameter(string $name): ?string
