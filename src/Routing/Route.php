@@ -30,11 +30,11 @@ class Route
      * @param class-string<RequestHandlerInterface> $controller
      * @param Methods                               ...$methods
      */
-    public function __construct(string $uri, public readonly string $controller, Methods ...$methods)
+    public function __construct(protected readonly Router $router, string $uri, public readonly string $controller, Methods ...$methods)
     {
-        if (!str_starts_with($uri, "/") && empty(Router::getBaseUri())) {
+        if (!str_starts_with($uri, "/") && empty($this->router->getBaseUri())) {
             $uri = "/{$uri}";
-        } elseif (!empty(Router::getBaseUri()) && str_ends_with($uri, "/")) {
+        } elseif (!empty($this->router->getBaseUri()) && str_ends_with($uri, "/")) {
             $uri = substr($uri, 0, -1);
         }
 
@@ -42,7 +42,7 @@ class Route
             throw new InvalidArgumentException("{$controller} must implement " . RequestHandlerInterface::class);
         }
 
-        $this->uri = Router::getBaseUri() . $uri;
+        $this->uri = $this->router->getBaseUri() . $uri;
 
         $this->parameters = new stdClass();
 
