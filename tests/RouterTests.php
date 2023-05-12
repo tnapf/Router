@@ -52,7 +52,7 @@ use Tnapf\Router\Routing\Route;
 
 class RouterTests extends TestCase
 {
-    public function getTestRoutes()
+    public function getTestRoutes(): array
     {
         return [
             Route::new("/", TestController::class, Methods::GET)
@@ -96,7 +96,7 @@ class RouterTests extends TestCase
         ];
     }
 
-    public function registerTestRoutes()
+    public function registerTestRoutes(): void
     {
         Router::clearAll();
         foreach ($this->getTestRoutes() as $route) {
