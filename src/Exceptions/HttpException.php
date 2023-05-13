@@ -26,20 +26,29 @@ abstract class HttpException extends Exception
         return new EmptyResponse(static::CODE);
     }
 
-    public static function buildHtmlResponse(): HtmlResponse
+    protected static function checkConstants(): void
     {
         $code = static::CODE;
-        $description = static::DESCRIPTION;
-        $phrase = static::PHRASE;
+        $description = trim(static::DESCRIPTION);
+        $phrase = trim(static::PHRASE);
         $href = static::HREF;
 
         if (empty($phrase)) {
             throw new RuntimeException("Phrase constant is not defined.");
         }
 
-        if ($description === '') {
+        if (empty($description)) {
             throw new RuntimeException("Description constant defined.");
         }
+    }
+
+    public static function buildHtmlResponse(): HtmlResponse
+    {
+        self::checkConstants();
+        $code = static::CODE;
+        $description = trim(static::DESCRIPTION);
+        $phrase = trim(static::PHRASE);
+        $href = static::HREF;
 
         $title = "{$code} - {$phrase}";
 
@@ -52,18 +61,11 @@ abstract class HttpException extends Exception
 
     public static function buildJsonResponse(): JsonResponse
     {
+        self::checkConstants();
         $code = static::CODE;
-        $description = static::DESCRIPTION;
-        $phrase = static::PHRASE;
+        $description = trim(static::DESCRIPTION);
+        $phrase = trim(static::PHRASE);
         $href = static::HREF;
-
-        if ($phrase === '') {
-            throw new RuntimeException("Phrase constant is not defined.");
-        }
-
-        if ($description === '') {
-            throw new RuntimeException("Description constant defined.");
-        }
 
         $json = compact("description", "phrase");
 

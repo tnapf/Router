@@ -2,56 +2,67 @@
 
 namespace Tests\Tnapf\Router;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Route;
 
 class RouteTests extends TestCase
 {
+    protected Router $router;
+
+    public function __construct(string $name)
+    {
+        parent::__construct($name);
+
+        $this->router = new Router();
+    }
+
     public function createBasicRoute(Methods...$methods): Route
     {
-        return new Route("home", \Tests\Tnapf\Router\TestController::class, ...$methods);
+        return new Route($this->router, "home", TestController::class, ...$methods);
     }
 
     public function testRoutePrependsMissingStartingSlash(): void
     {
         $route = $this->createBasicRoute();
-        $this->assertEquals("/home", $route->uri, "Route should prepend missing starting slash");
+        $this->assertSame("/home", $route->uri, "Route should prepend missing starting slash");
     }
 
     public function testRouteRejectsInvalidController(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
-        new Route("/", "InvalidController");
+        new Route($this->router, "/", "InvalidController");
     }
 
     public function testRouteSettingGettingParameters(): void
     {
         $route = $this->createBasicRoute();
         $route->setParameter("id", "\d+");
-        $this->assertEquals("(\d+)", $route->getParameter("id"), "Route should set parameter");
+        $this->assertSame("(\d+)", $route->getParameter("id"), "Route should set parameter");
 
-        $this->assertEquals("{invalid}", $route->getParameter("invalid"), "Route should return the parameter name if it doesn't exist");
+        $this->assertSame("{invalid}", $route->getParameter("invalid"), "Route should return the parameter name if it doesn't exist");
     }
 
     public function testRouteAddingPostware(): void
     {
         $route = $this->createBasicRoute();
-        $route->addPostware(\Tests\Tnapf\Router\TestController::class);
-        $this->assertEquals(\Tests\Tnapf\Router\TestController::class, $route->getPostware()[0], "Route should add postware");
+        $route->addPostware(TestController::class);
+        $this->assertEquals(TestController::class, $route->getPostware()[0], "Route should add postware");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $route->addPostware("InvalidController");
     }
 
     public function testRouteAddingMiddleware(): void
     {
         $route = $this->createBasicRoute();
-        $route->addMiddleware(\Tests\Tnapf\Router\TestController::class);
-        $this->assertEquals(\Tests\Tnapf\Router\TestController::class, $route->getMiddleware()[0], "Route should add middleware");
+        $route->addMiddleware(TestController::class);
+        $this->assertEquals(TestController::class, $route->getMiddleware()[0], "Route should add middleware");
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $route->addMiddleware("InvalidController");
     }
 

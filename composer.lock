@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "commandstring/utils",
-            "version": "v1.5.2",
+            "version": "v1.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CommandString/Utils.git",
-                "reference": "c3c310f6d7f0aa1d05b27e6cdb70ec7ccd60ed2d"
+                "reference": "b07ae426455c34ce654f266779a2f52bb9134432"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CommandString/Utils/zipball/c3c310f6d7f0aa1d05b27e6cdb70ec7ccd60ed2d",
-                "reference": "c3c310f6d7f0aa1d05b27e6cdb70ec7ccd60ed2d",
+                "url": "https://api.github.com/repos/CommandString/Utils/zipball/b07ae426455c34ce654f266779a2f52bb9134432",
+                "reference": "b07ae426455c34ce654f266779a2f52bb9134432",
                 "shasum": ""
             },
             "require-dev": {
@@ -28,7 +28,7 @@
             "autoload": {
                 "psr-4": {
                     "CommandString\\Utils\\": "src/",
-                    "CommandString\\Utils\\Tests\\": "tests/"
+                    "Tests\\CommandString\\Utils\\": "tests/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -38,9 +38,9 @@
             "description": "A collection of useful PHP utilities",
             "support": {
                 "issues": "https://github.com/CommandString/Utils/issues",
-                "source": "https://github.com/CommandString/Utils/tree/v1.5.2"
+                "source": "https://github.com/CommandString/Utils/tree/v1.7.2"
             },
-            "time": "2023-04-30T05:10:23+00:00"
+            "time": "2023-05-01T18:29:10+00:00"
         },
         {
             "name": "httpsoft/http-emitter",
@@ -1346,16 +1346,16 @@
         },
         {
             "name": "sebastian/diff",
-            "version": "5.0.1",
+            "version": "5.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "aae9a0a43bff37bd5d8d0311426c87bf36153f02"
+                "reference": "912dc2fbe3e3c1e7873313cc801b100b6c68c87b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/aae9a0a43bff37bd5d8d0311426c87bf36153f02",
-                "reference": "aae9a0a43bff37bd5d8d0311426c87bf36153f02",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/912dc2fbe3e3c1e7873313cc801b100b6c68c87b",
+                "reference": "912dc2fbe3e3c1e7873313cc801b100b6c68c87b",
                 "shasum": ""
             },
             "require": {
@@ -1401,7 +1401,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/diff/issues",
                 "security": "https://github.com/sebastianbergmann/diff/security/policy",
-                "source": "https://github.com/sebastianbergmann/diff/tree/5.0.1"
+                "source": "https://github.com/sebastianbergmann/diff/tree/5.0.3"
             },
             "funding": [
                 {
@@ -1409,7 +1409,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-03-23T05:12:41+00:00"
+            "time": "2023-05-01T07:48:21+00:00"
         },
         {
             "name": "sebastian/environment",

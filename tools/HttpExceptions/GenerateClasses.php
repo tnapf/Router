@@ -26,10 +26,10 @@ foreach ($codes as $key => $code) {
     $psrDescription = "";
     $words = explode(" ", $code->description);
 
-    $line = "";
+    $line = "\"";
     foreach ($words as $word) {
-        if (strlen($line) > 50) {
-            $psrDescription .= $line . "\n";
+        if (strlen($line) > 70) {
+            $psrDescription .= $line . "\" . \n          \"";
             $line = "";
         }
 
@@ -50,7 +50,8 @@ class <?= $className ?> extends HttpException
 {
     public const CODE = <?= $code->code ?>;
     public const PHRASE = "<?= $code->phrase ?>";
-    public const DESCRIPTION = "<?= $psrDescription ?>";
+    public const DESCRIPTION
+        = <?= $psrDescription ?>";
     public const HREF = "<?= $code->mdn ?>";
 }
 <?php
