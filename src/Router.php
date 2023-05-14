@@ -353,9 +353,8 @@ class Router
         $this->clearCatchers();
     }
 
-    public function run(?ServerRequestInterface $request = null, ?EmitterInterface $emitter = null): void
+    public function run(?ServerRequestInterface $request = null): ResponseInterface
     {
-        $emitter ??= new SapiEmitter();
         $routes = $this->getRoutes();
         $catchers = $this->getCatchers(false);
         $request ??= ServerRequestCreator::createFromGlobals();
@@ -395,6 +394,6 @@ class Router
             }
         }
 
-        $emitter->emit($response);
+        return $response;
     }
 }
