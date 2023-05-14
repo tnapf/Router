@@ -3,10 +3,11 @@
 namespace Tnapf\Router\Routing;
 
 use InvalidArgumentException;
+use Psr\Http\Server\MiddlewareInterface;
 use stdClass;
 use Tnapf\Router\Enums\Methods;
 use Tnapf\Router\Router;
-use Tnapf\Router\Interfaces\RequestHandlerInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class Route
 {
@@ -15,36 +16,26 @@ class Route
     private array $staticArguments = [];
 
     /**
-     * @var RequestHandlerInterface[]
+      * @var MiddlewareInterface[]
      */
     private array $middleware = [];
 
     /**
-     * @var RequestHandlerInterface[]
+     * @var MiddlewareInterface[]
      */
     private array $postware = [];
     private stdClass $parameters;
 
-    /**
-     * @param Router $router
-     * @param string $uri
-     * @param class-string<RequestHandlerInterface> $controller
-     * @param Methods ...$methods
-     */
     public function __construct(
         protected readonly Router $router,
         string $uri,
-        public readonly string $controller,
+        public readonly RequestHandlerInterface $controller,
         Methods ...$methods
     ) {
         if (!str_starts_with($uri, "/") && empty($this->router->getBaseUri())) {
             $uri = "/{$uri}";
         } elseif (!empty($this->router->getBaseUri()) && str_ends_with($uri, "/")) {
             $uri = substr($uri, 0, -1);
-        }
-
-        if (!is_subclass_of($controller, RequestHandlerInterface::class)) {
-            throw new InvalidArgumentException("{$controller} must implement " . RequestHandlerInterface::class);
         }
 
         $this->uri = $this->router->getBaseUri() . $uri;
@@ -57,7 +48,7 @@ class Route
     public static function new(
         Router $router,
         string $uri,
-        string $controller,
+        RequestHandlerInterface $controller,
         Methods ...$methods
     ): self {
         return new self($router, $uri, $controller, ...$methods);
@@ -75,51 +66,29 @@ class Route
         return $this;
     }
 
-    /**
-     * @param class-string<RequestHandlerInterface> ...$middlewares
-     * @return self
-     */
-    public function addMiddleware(string ...$middlewares): self
+    public function addMiddleware(MiddlewareInterface ...$middlewares): self
     {
         foreach ($middlewares as $middleware) {
-            if (!is_subclass_of($middleware, RequestHandlerInterface::class)) {
-                throw new InvalidArgumentException("{$middleware} must implement " . RequestHandlerInterface::class);
-            }
-
             $this->middleware[] = $middleware;
         }
 
         return $this;
     }
 
-    /**
-     * @param class-string<RequestHandlerInterface> ...$postwares
-     * @return self
-     */
-    public function addPostware(string ...$postwares): self
+    public function addPostware(MiddlewareInterface ...$postwares): self
     {
         foreach ($postwares as $postware) {
-            if (!is_subclass_of($postware, RequestHandlerInterface::class)) {
-                throw new InvalidArgumentException("{$postware} must implement " . RequestHandlerInterface::class);
-            }
-
             $this->postware[] = $postware;
         }
 
         return $this;
     }
 
-    /**
-     * @return RequestHandlerInterface[]
-     */
     public function getMiddleware(): array
     {
         return $this->middleware;
     }
 
-    /**
-     * @return RequestHandlerInterface[]
-     */
     public function getPostware(): array
     {
         return $this->postware;
