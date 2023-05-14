@@ -37,83 +37,51 @@ class Router
      */
     protected array $catchers = [];
 
-    public function get(string $uri, RequestHandlerInterface $controller): Route
+    public function get(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::GET);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::GET));
     }
 
-    public function post(string $uri, RequestHandlerInterface $controller): Route
+    public function post(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::POST);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::POST));
     }
 
-    public function put(string $uri, RequestHandlerInterface $controller): Route
+    public function put(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::PUT);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::PUT));
     }
 
-    public function patch(string $uri, RequestHandlerInterface $controller): Route
+    public function patch(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::PATCH);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::PATCH));
     }
 
-    public function delete(string $uri, RequestHandlerInterface $controller): Route
+    public function delete(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::DELETE);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::DELETE));
     }
 
 
-    public function options(string $uri, RequestHandlerInterface $controller): Route
+    public function options(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::OPTIONS);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::OPTIONS));
     }
 
 
-    public function head(string $uri, RequestHandlerInterface $controller): Route
+    public function head(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, Methods::HEAD);
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, Methods::HEAD));
     }
 
 
-    public function all(string $uri, RequestHandlerInterface $controller): Route
+    public function all(string $uri, ControllerInterface $controller): Route
     {
-        $route = new Route($this, $uri, $controller, ...Methods::cases());
-
-        $this->addRoute($route);
-
-        return $route;
+        return $this->addRoute(Route::new($this, $uri, $controller, ...Methods::cases()));
     }
 
 
-    public function addRoute(Route $route): void
+    public function addRoute(Route $route): Route
     {
         if (isset($this->group)) {
             foreach ($this->group["middlewares"] ?? [] as $middlware) {
