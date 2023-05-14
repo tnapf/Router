@@ -11,7 +11,7 @@
     },
     "authors": [
         {
-            "name": "Michael Snedeker",
+            "name": "Robert Snedeker",
             "email": "rsnedeker20@gmail.com"
         }
     ],
@@ -21,9 +21,7 @@
         "commandstring/utils": "^1.4",
         "httpsoft/http-emitter": "^1.0",
         "httpsoft/http-response": "^1.0",
-        "httpsoft/http-message": "^1.0.12",
-        "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0"
+        "httpsoft/http-message": "^1.0.12"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.7",
