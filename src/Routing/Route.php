@@ -2,12 +2,12 @@
 
 namespace Tnapf\Router\Routing;
 
-use InvalidArgumentException;
-use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
 use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Interfaces\ControllerInterface;
 use Tnapf\Router\Router;
-use Psr\Http\Server\RequestHandlerInterface;
 
 class Route
 {
@@ -16,12 +16,12 @@ class Route
     private array $staticArguments = [];
 
     /**
-      * @var MiddlewareInterface[]
+      * @var ControllerInterface[]
      */
     private array $middleware = [];
 
     /**
-     * @var MiddlewareInterface[]
+     * @var ControllerInterface[]
      */
     private array $postware = [];
     private stdClass $parameters;
@@ -29,7 +29,7 @@ class Route
     public function __construct(
         protected readonly Router $router,
         string $uri,
-        public readonly RequestHandlerInterface $controller,
+        public readonly ControllerInterface $controller,
         Methods ...$methods
     ) {
         if (!str_starts_with($uri, "/") && empty($this->router->getBaseUri())) {
@@ -48,7 +48,7 @@ class Route
     public static function new(
         Router $router,
         string $uri,
-        RequestHandlerInterface $controller,
+        ControllerInterface $controller,
         Methods ...$methods
     ): self {
         return new self($router, $uri, $controller, ...$methods);
@@ -66,7 +66,7 @@ class Route
         return $this;
     }
 
-    public function addMiddleware(MiddlewareInterface ...$middlewares): self
+    public function addMiddleware(ControllerInterface ...$middlewares): self
     {
         foreach ($middlewares as $middleware) {
             $this->middleware[] = $middleware;
@@ -75,7 +75,7 @@ class Route
         return $this;
     }
 
-    public function addPostware(MiddlewareInterface ...$postwares): self
+    public function addPostware(ControllerInterface ...$postwares): self
     {
         foreach ($postwares as $postware) {
             $this->postware[] = $postware;
