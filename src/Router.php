@@ -10,6 +10,7 @@ use HttpSoft\ServerRequest\ServerRequestCreator;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use stdClass;
 use Throwable;
 use Tnapf\Router\Enums\Methods;
@@ -36,7 +37,7 @@ class Router
      */
     protected array $catchers = [];
 
-    public function get(string $uri, string $controller): Route
+    public function get(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::GET);
 
@@ -45,7 +46,7 @@ class Router
         return $route;
     }
 
-    public function post(string $uri, string $controller): Route
+    public function post(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::POST);
 
@@ -54,7 +55,7 @@ class Router
         return $route;
     }
 
-    public function put(string $uri, string $controller): Route
+    public function put(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::PUT);
 
@@ -63,7 +64,7 @@ class Router
         return $route;
     }
 
-    public function patch(string $uri, string $controller): Route
+    public function patch(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::PATCH);
 
@@ -72,7 +73,7 @@ class Router
         return $route;
     }
 
-    public function delete(string $uri, string $controller): Route
+    public function delete(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::DELETE);
 
@@ -82,7 +83,7 @@ class Router
     }
 
 
-    public function options(string $uri, string $controller): Route
+    public function options(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::OPTIONS);
 
@@ -92,7 +93,7 @@ class Router
     }
 
 
-    public function head(string $uri, string $controller): Route
+    public function head(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, Methods::HEAD);
 
@@ -102,7 +103,7 @@ class Router
     }
 
 
-    public function all(string $uri, string $controller): Route
+    public function all(string $uri, RequestHandlerInterface $controller): Route
     {
         $route = new Route($this, $uri, $controller, ...Methods::cases());
 
