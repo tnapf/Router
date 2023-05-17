@@ -3,7 +3,6 @@
 namespace Tests\Tnapf\Router;
 
 use Exception;
-use http\Env\Request;
 use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Message\ServerRequest;
 use HttpSoft\Response\TextResponse;
@@ -15,14 +14,28 @@ use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Methods;
 use Tnapf\Router\Routing\RouteRunner;
 
+use const PHP_EOL;
 use const SEEK_END;
 
 class RouterTests extends TestCase
 {
-    public function newRouter(): Router
+    public function newRouter(bool $withCatcher = true): Router
     {
         $router = new Router();
-//        $router->catch(toCatch: Throwable, controller: static fn($request, $response, $route): TextResponse => new TextResponse($route->exception), method: "GET", path: "/404");
+
+        if ($withCatcher) {
+            $router->catch(
+                toCatch: Throwable::class,
+                controller: static function (
+                    ServerRequestInterface $request,
+                    ResponseInterface $response,
+                    RouteRunner $route
+                ): TextResponse {
+                    echo $route->exception->getMessage() . PHP_EOL . $route->exception->getTraceAsString() . PHP_EOL;
+                }
+            );
+        }
+
         return $router;
     }
 
@@ -73,10 +86,10 @@ class RouterTests extends TestCase
 
     public function test500(): void
     {
-        $router = $this->newRouter();
+        $router = $this->newRouter(false);
 
         $router->get("/exception", static function (): void {
-            throw new \Exception("Test");
+            throw new Exception("Test");
         });
 
         $request = new ServerRequest(method: "GET", uri: "/exception");
@@ -89,7 +102,11 @@ class RouterTests extends TestCase
     {
         $router = $this->newRouter();
 
-        $router->get("/hello/{name}", static function ($request, $response, $route): TextResponse {
+        $router->get("/hello/{name}", static function (
+            ServerRequestInterface $request,
+            ResponseInterface $response,
+            RouteRunner $route
+        ): TextResponse {
             return new TextResponse("Hello {$route->args->name}!");
         });
 
@@ -200,7 +217,7 @@ class RouterTests extends TestCase
         $router = $this->newRouter();
 
         $router->get("/catch", static function (): void {
-            throw new \Exception("Test");
+            throw new Exception("Test");
         });
 
         $router->catch(Exception::class, static function (): ResponseInterface {
