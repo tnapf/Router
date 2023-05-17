@@ -3,15 +3,9 @@
 namespace Tnapf\Router\Routing;
 
 use Closure;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
 use Tnapf\Router\Handlers\ClosureRequestHandler;
-use Tnapf\Router\Routing\Methods;
 use Tnapf\Router\Interfaces\ControllerInterface;
-use Tnapf\Router\Router;
-
-use function var_dump;
 
 class Route
 {
