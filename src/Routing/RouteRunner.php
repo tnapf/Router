@@ -53,21 +53,26 @@ class RouteRunner
         }
     }
 
-    public function appendControllerToRun(ControllerInterface $controller): void
+    public function appendControllersToRun(ControllerInterface ...$controllers): void
     {
         $this->throwIfRunning();
-        $this->controllersToRun[] = $controller;
+
+        foreach ($controllers as $controller) {
+            $this->controllersToRun[] = $controller;
+        }
     }
 
     public static function createFromRoute(Route $route, ?stdClass $args = null): self
     {
         $runner = new self();
 
-        $runner->controllersToRun = [
-            ...$route->getMiddleware(),
-            $route->controller,
-            ...$route->getPostware()
-        ];
+        $runner->appendControllersToRun(
+            ...[
+                ...$route->getMiddleware(),
+                $route->controller,
+                ...$route->getPostware()
+            ]
+        );
 
         if ($args !== null) {
             $runner->args = $args;
@@ -78,5 +83,10 @@ class RouteRunner
         }
 
         return $runner;
+    }
+
+    public function getParameter(string $name): mixed
+    {
+        return $this->args->$name ?? null;
     }
 }
