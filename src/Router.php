@@ -2,22 +2,23 @@
 
 namespace Tnapf\Router;
 
-use Closure;
-use HttpSoft\Emitter\EmitterInterface;
-use HttpSoft\Emitter\SapiEmitter;
-use HttpSoft\Message\Response;
-use HttpSoft\Response\EmptyResponse;
 use HttpSoft\ServerRequest\ServerRequestCreator;
-use Psr\Http\Message\ResponseInterface;
+use Tnapf\Router\Interfaces\ControllerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use HttpSoft\Emitter\EmitterInterface;
+use Tnapf\Router\Routing\RouteRunner;
+use HttpSoft\Response\EmptyResponse;
+use HttpSoft\Emitter\SapiEmitter;
+use Tnapf\Router\Routing\Methods;
+use Tnapf\Router\Routing\Route;
+use HttpSoft\Message\Response;
+use Closure;
 use stdClass;
 use Throwable;
-use Tnapf\Router\Routing\Methods;
-use Tnapf\Router\Interfaces\ControllerInterface;
-use Tnapf\Router\Routing\Route;
-use Tnapf\Router\Routing\RouteRunner;
 
 use function array_keys;
+use function array_map;
 use function in_array;
 use function strtoupper;
 
@@ -247,9 +248,7 @@ class Router
 
         $sortByLength = static fn(Route $a, Route $b) => (strlen($a->uri) > strlen($b->uri));
 
-        foreach ($this->catchers as &$catcher) {
-            usort($catcher, $sortByLength);
-        }
+        array_map(static fn(array &$catcher) => usort($catcher, $sortByLength), $this->catchers);
 
         usort($this->routes, $sortByLength);
 
