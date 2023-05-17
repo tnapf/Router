@@ -6,78 +6,76 @@ use Closure;
 use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Emitter\SapiEmitter;
 use HttpSoft\Message\Response;
+use HttpSoft\Response\EmptyResponse;
 use HttpSoft\ServerRequest\ServerRequestCreator;
-use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use stdClass;
 use Throwable;
-use Tnapf\Router\Enums\Methods;
-use Tnapf\Router\Exceptions\HttpException;
-use Tnapf\Router\Exceptions\HttpInternalServerError;
+use Tnapf\Router\Routing\Methods;
+use Tnapf\Router\Interfaces\ControllerInterface;
 use Tnapf\Router\Routing\Route;
-use Tnapf\Router\Routing\ResolvedRoute;
+use Tnapf\Router\Routing\RouteRunner;
+
+use function array_keys;
+use function in_array;
+use function strtoupper;
 
 class Router
 {
-    public const EMIT_EMPTY_RESPONSE = 1;
-    public const EMIT_HTML_RESPONSE = 2;
-    public const EMIT_JSON_RESPONSE = 3;
-
     /**
      * @var Route[]
      */
     protected array $routes = [];
     protected array $group = [];
-    protected int $emitHttpExceptions = 0;
 
     /**
      * @var Route[][]
      */
     protected array $catchers = [];
+    protected bool $sorted = false;
 
-    public function get(string $uri, ControllerInterface $controller): Route
+    public function get(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::GET));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::GET));
     }
 
-    public function post(string $uri, ControllerInterface $controller): Route
+    public function post(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::POST));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::POST));
     }
 
-    public function put(string $uri, ControllerInterface $controller): Route
+    public function put(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::PUT));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::PUT));
     }
 
-    public function patch(string $uri, ControllerInterface $controller): Route
+    public function patch(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::PATCH));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::PATCH));
     }
 
-    public function delete(string $uri, ControllerInterface $controller): Route
+    public function delete(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::DELETE));
-    }
-
-
-    public function options(string $uri, ControllerInterface $controller): Route
-    {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::OPTIONS));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::DELETE));
     }
 
 
-    public function head(string $uri, ControllerInterface $controller): Route
+    public function options(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, Methods::HEAD));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::OPTIONS));
     }
 
 
-    public function all(string $uri, ControllerInterface $controller): Route
+    public function head(string $uri, ControllerInterface|Closure $controller): Route
     {
-        return $this->addRoute(Route::new($this, $uri, $controller, ...Methods::cases()));
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::HEAD));
+    }
+
+
+    public function all(string $uri, ControllerInterface|Closure $controller): Route
+    {
+        return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), ...Methods::ALL));
     }
 
 
@@ -102,6 +100,10 @@ class Router
         }
 
         $this->routes[] = &$route;
+
+        $this->sorted = false;
+
+        return $route;
     }
 
     public function group(
@@ -111,7 +113,7 @@ class Router
         array $postwares = [],
         array $parameters = [],
         array $staticArguments = []
-    ): void {
+    ): self {
         $oldMount = $this->group;
 
         if (empty($this->getBaseUri())) {
@@ -124,9 +126,11 @@ class Router
             $this->group['staticArguments'] = [...$this->group['staticArguments'], ...$staticArguments];
         }
 
-        $grouping();
+        $grouping($this);
 
         $this->group = $oldMount;
+
+        return $this;
     }
 
     public function getBaseUri(): string
@@ -134,12 +138,7 @@ class Router
         return $this->group["baseUri"] ?? "";
     }
 
-    /**
-     * @param array $routes
-     * @param ServerRequestInterface $request
-     * @return ResolvedRoute|null
-     */
-    protected function resolveRoute(array $routes, ServerRequestInterface $request): ?ResolvedRoute
+    protected function resolveRoute(array $routes, ServerRequestInterface $request): ?RouteRunner
     {
         $routeMatches = static function (Route $route, string $requestUri, ?array &$matches) use (&$argNames): bool {
             $argNames = [];
@@ -165,16 +164,15 @@ class Router
 
             $pattern = preg_replace('/\/{(.*?)}/', '/(.*?)', $uri);
 
-            return (bool) preg_match_all('#^' . $pattern . '$#', $requestUri, $matches, PREG_OFFSET_CAPTURE);
+            return (bool)preg_match_all('#^' . $pattern . '$#', $requestUri, $matches, PREG_OFFSET_CAPTURE);
         };
 
-        $uri = explode("?", $request->getRequestTarget())[0];
+        $uri = $request->getUri()->getPath();
 
-        $method = Methods::from($request->getMethod());
+        $method = strtoupper($request->getMethod());
 
         foreach ($routes as $route) {
             $matches = [];
-
             $isMatch = $routeMatches($route, $uri, $matches);
 
             if (!$isMatch || !$route->acceptsMethod($method)) {
@@ -183,6 +181,7 @@ class Router
 
             $args = new stdClass();
             $argsIterator = 0;
+
             foreach ($matches as $index => $match) {
                 if (!$index) {
                     continue;
@@ -193,36 +192,27 @@ class Router
                 $args->$name = isset($match[0][0]) && $match[0][1] != -1 ? trim($match[0][0], '/') : null;
             }
 
-            $resolvedRoute = new ResolvedRoute($route, $args);
+            $runner = RouteRunner::createFromRoute($route, $args);
         }
 
-        return $resolvedRoute ?? null;
+        return $runner ?? null;
     }
 
-    public function catch(string $toCatch, string $controller, ?string $uri = "/(.*)"): Route
+    public function catch(string $toCatch, ControllerInterface|Closure $controller, ?string $uri = "/(.*)"): Route
     {
         $catchable = array_keys($this->catchers);
 
         if (!in_array($toCatch, $catchable)) {
-            $this->makeCatchable($toCatch);
+            $this->catchers[$toCatch] = [];
         }
 
-        $route = new Route($this, $uri, $controller, ...Methods::cases());
+        $route = new Route($uri, $controller, $this->getBaseUri(), ...Methods::ALL);
 
         $this->catchers[$toCatch][] = &$route;
 
+        $this->sorted = false;
+
         return $route;
-    }
-
-    public function makeCatchable(string $toCatch): void
-    {
-        if (!isset($this->catchers[$toCatch])) {
-            if (!is_subclass_of($toCatch, HttpException::class)) {
-                throw new InvalidArgumentException("{$toCatch} must extend " . HttpException::class);
-            }
-
-            $this->catchers[$toCatch] = [];
-        }
     }
 
     /**
@@ -249,60 +239,21 @@ class Router
         return $this->catchers;
     }
 
-    public function emitHttpExceptions(int $type): void
-    {
-        $this->emitHttpExceptions = $type;
-    }
-
-    protected function invokeRoute(
-        ResolvedRoute $resolvedRoute,
-        ServerRequestInterface $request
-    ): ResponseInterface {
-        $response = new Response();
-
-        $controllers = [
-            ...$resolvedRoute->route->getMiddleware(),
-            $resolvedRoute->route->controller,
-            ...$resolvedRoute->route->getPostware()
-        ];
-
-        $next = static function (
-            ServerRequestInterface $request,
-            ResponseInterface $response,
-            stdClass $args
-        ) use (
-            &$controllers,
-            &$next
-        ): ResponseInterface {
-            $controller = array_shift($controllers);
-
-            if ($controller === null) {
-                return $response;
-            }
-
-            return call_user_func("{$controller}::handle", $request, $response, $args, $next);
-        };
-
-        foreach ($resolvedRoute->route->getStaticArguments() as $name => $value) {
-            $resolvedRoute->args->$name = $value;
-        }
-
-        return $next($request, $response, $resolvedRoute->args);
-    }
-
     protected function sortRoutesAndCatchers(): void
     {
-        $sortByLength = static function (Route $a, Route $b) {
-            return (strlen($a->uri) > strlen($b->uri));
-        };
+        if ($this->sorted) {
+            return;
+        }
+
+        $sortByLength = static fn(Route $a, Route $b) => (strlen($a->uri) > strlen($b->uri));
 
         foreach ($this->catchers as &$catcher) {
             usort($catcher, $sortByLength);
         }
 
-        unset($catcher);
-
         usort($this->routes, $sortByLength);
+
+        $this->sorted = true;
     }
 
     public function clearRoutes(): void
@@ -321,47 +272,49 @@ class Router
         $this->clearCatchers();
     }
 
+    protected function invokeRoute(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        RouteRunner $runner,
+        bool $catching = false
+    ): ResponseInterface {
+        try {
+            return $runner->run($request);
+        } catch (Throwable $e) {
+            $catchers = array_keys($this->getCatchers(false));
+
+            $runner =
+                $this->resolveRoute($this->getCatchers()[$e::class] ?? [], $request) ??
+                $this->resolveRoute($this->getCatchers()[Throwable::class] ?? [], $request);
+
+            if ($runner === null || $catching) {
+                return new EmptyResponse(500);
+            }
+
+            $runner->exception = $e;
+
+            return $this->invokeRoute($request, $response, $runner, true);
+        }
+    }
+
     public function run(?ServerRequestInterface $request = null): ResponseInterface
     {
         $routes = $this->getRoutes();
-        $catchers = $this->getCatchers(false);
         $request ??= ServerRequestCreator::createFromGlobals();
-        $resolved = $this->resolveRoute($routes, $request);
+        $runner = $this->resolveRoute($routes, $request);
 
-        try {
-            if ($resolved === null) {
-                throw new Exceptions\HttpNotFound($request);
-            }
-
-            $response = $this->invokeRoute($resolved, $request);
-        } catch (Throwable $e) {
-            $resolved = array_key_exists($e::class, $catchers) ?
-                $this->resolveRoute($catchers[$e::class], $request) :
-                $this->resolveRoute($catchers[HttpInternalServerError::class] ?? [], $request)
-            ;
-
-            if ($resolved === null) {
-                if (!$e instanceof HttpException) {
-                    throw $e;
-                }
-
-                $class = $e::class;
-
-                $method = match ($this->emitHttpExceptions) {
-                    self::EMIT_HTML_RESPONSE => "buildHtmlResponse",
-                    self::EMIT_JSON_RESPONSE => "buildJsonResponse",
-                    default => "buildEmptyResponse"
-                };
-
-                $response = call_user_func("{$class}::{$method}");
-            }
-
-            if (!isset($response)) {
-                $resolved->args->exception = $e;
-                $response = $this->invokeRoute($resolved, $request);
-            }
+        if ($runner === null) {
+            return new EmptyResponse(404);
         }
 
-        return $response;
+        return $this->invokeRoute($request, new Response(), $runner);
+    }
+
+    public function emit(?ServerRequestInterface $request = null, ?EmitterInterface $emitter = null): void
+    {
+        $response = $this->run($request);
+        $emitter ??= new SapiEmitter();
+
+        $emitter->emit($response);
     }
 }
