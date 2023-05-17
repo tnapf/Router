@@ -33,10 +33,11 @@ class Route
      */
     private array $postware = [];
     private stdClass $parameters;
+    public readonly ControllerInterface $controller;
 
     public function __construct(
         string $uri,
-        public readonly ControllerInterface $controller,
+        ControllerInterface|Closure $controller,
         protected readonly string $baseUri = "",
         string ...$methods
     ) {
@@ -48,11 +49,14 @@ class Route
             $uri = substr($uri, 0, -1);
         }
 
+        if ($controller instanceof Closure) {
+            $controller = new ClosureRequestHandler($controller);
+        }
+
         $this->uri = $this->baseUri . $uri;
-
         $this->parameters = new stdClass();
-
         $this->methods = $methods;
+        $this->controller = $controller;
     }
 
     public static function new(
@@ -61,10 +65,6 @@ class Route
         string $baseUri = "",
         string ...$methods
     ): self {
-        if ($controller instanceof Closure) {
-            $controller = new ClosureRequestHandler($controller);
-        }
-
         return new self($uri, $controller, $baseUri, ...$methods);
     }
 
