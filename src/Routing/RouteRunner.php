@@ -7,6 +7,7 @@ use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
+use Throwable;
 use Tnapf\Router\Interfaces\ControllerInterface;
 
 class RouteRunner
@@ -16,6 +17,7 @@ class RouteRunner
     protected bool $isRunning = false;
 
     public stdClass $args;
+    public Throwable $exception;
 
     public function __construct()
     {
@@ -38,7 +40,7 @@ class RouteRunner
         $controller = array_shift($this->controllersToRun);
 
         if ($controller === null) {
-            throw new LogicException("No more controllers to run!");
+            return $response;
         }
 
         return $controller->handle($request, $response, $this);

@@ -2,21 +2,29 @@
 
 namespace Tnapf\Router\Routing;
 
+use Closure;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use stdClass;
-use Tnapf\Router\Enums\Methods;
+use Tnapf\Router\Handlers\ClosureRequestHandler;
+use Tnapf\Router\Routing\Methods;
 use Tnapf\Router\Interfaces\ControllerInterface;
 use Tnapf\Router\Router;
+
+use function var_dump;
 
 class Route
 {
     public readonly string $uri;
+
+    /**
+     * @var string[]
+     */
     private array $methods;
     private array $staticArguments = [];
 
     /**
-      * @var ControllerInterface[]
+     * @var ControllerInterface[]
      */
     private array $middleware = [];
 
@@ -27,18 +35,20 @@ class Route
     private stdClass $parameters;
 
     public function __construct(
-        protected readonly Router $router,
         string $uri,
         public readonly ControllerInterface $controller,
-        Methods ...$methods
+        protected readonly string $baseUri = "",
+        string ...$methods
     ) {
-        if (!str_starts_with($uri, "/") && empty($this->router->getBaseUri())) {
+        if (!str_starts_with($uri, "/")) {
             $uri = "/{$uri}";
-        } elseif (!empty($this->router->getBaseUri()) && str_ends_with($uri, "/")) {
+        }
+
+        if (!empty($this->baseUri) && str_ends_with($uri, "/")) {
             $uri = substr($uri, 0, -1);
         }
 
-        $this->uri = $this->router->getBaseUri() . $uri;
+        $this->uri = $this->baseUri . $uri;
 
         $this->parameters = new stdClass();
 
@@ -46,12 +56,16 @@ class Route
     }
 
     public static function new(
-        Router $router,
         string $uri,
-        ControllerInterface $controller,
-        Methods ...$methods
+        ControllerInterface|Closure $controller,
+        string $baseUri = "",
+        string ...$methods
     ): self {
-        return new self($router, $uri, $controller, ...$methods);
+        if ($controller instanceof Closure) {
+            $controller = new ClosureRequestHandler($controller);
+        }
+
+        return new self($uri, $controller, $baseUri, ...$methods);
     }
 
     public function getParameter(string $name): ?string
@@ -66,18 +80,26 @@ class Route
         return $this;
     }
 
-    public function addMiddleware(ControllerInterface ...$middlewares): self
+    public function addMiddleware(ControllerInterface|Closure ...$middlewares): self
     {
         foreach ($middlewares as $middleware) {
+            if ($middleware instanceof Closure) {
+                $middleware = new ClosureRequestHandler($middleware);
+            }
+
             $this->middleware[] = $middleware;
         }
 
         return $this;
     }
 
-    public function addPostware(ControllerInterface ...$postwares): self
+    public function addPostware(ControllerInterface|Closure ...$postwares): self
     {
         foreach ($postwares as $postware) {
+            if ($postware instanceof Closure) {
+                $postware = new ClosureRequestHandler($postware);
+            }
+
             $this->postware[] = $postware;
         }
 
@@ -94,7 +116,7 @@ class Route
         return $this->postware;
     }
 
-    public function acceptsMethod(Methods $method): bool
+    public function acceptsMethod(string $method): bool
     {
         return in_array($method, $this->methods);
     }
