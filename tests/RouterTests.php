@@ -3,449 +3,214 @@
 namespace Tests\Tnapf\Router;
 
 use Exception;
+use http\Env\Request;
+use HttpSoft\Emitter\EmitterInterface;
 use HttpSoft\Message\ServerRequest;
-use HttpSoft\Response\JsonResponse;
 use HttpSoft\Response\TextResponse;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use stdClass;
-use Tnapf\Router\Enums\Methods;
-use Tnapf\Router\Exceptions\HttpBadGateway;
-use Tnapf\Router\Exceptions\HttpBadRequest;
-use Tnapf\Router\Exceptions\HttpConflict;
-use Tnapf\Router\Exceptions\HttpException;
-use Tnapf\Router\Exceptions\HttpExpectationFailed;
-use Tnapf\Router\Exceptions\HttpFailedDependency;
-use Tnapf\Router\Exceptions\HttpForbidden;
-use Tnapf\Router\Exceptions\HttpGatewayTimeout;
-use Tnapf\Router\Exceptions\HttpGone;
-use Tnapf\Router\Exceptions\HttpImATeapot;
-use Tnapf\Router\Exceptions\HttpInsufficientStorage;
-use Tnapf\Router\Exceptions\HttpInternalServerError;
-use Tnapf\Router\Exceptions\HttpLengthRequired;
-use Tnapf\Router\Exceptions\HttpLocked;
-use Tnapf\Router\Exceptions\HttpMethodNotAllowed;
-use Tnapf\Router\Exceptions\HttpNetworkAuthenticationRequired;
-use Tnapf\Router\Exceptions\HttpNotAcceptable;
-use Tnapf\Router\Exceptions\HttpNotFound;
-use Tnapf\Router\Exceptions\HttpNotImplemented;
-use Tnapf\Router\Exceptions\HttpPayloadTooLarge;
-use Tnapf\Router\Exceptions\HttpPaymentRequired;
-use Tnapf\Router\Exceptions\HttpPreconditionFailed;
-use Tnapf\Router\Exceptions\HttpPreconditionRequired;
-use Tnapf\Router\Exceptions\HttpProxyAuthenticationRequired;
-use Tnapf\Router\Exceptions\HttpRangeNotSatisfiable;
-use Tnapf\Router\Exceptions\HttpRequestHeaderFieldsTooLarge;
-use Tnapf\Router\Exceptions\HttpRequestTimeout;
-use Tnapf\Router\Exceptions\HttpServiceUnavailable;
-use Tnapf\Router\Exceptions\HttpTooManyRequests;
-use Tnapf\Router\Exceptions\HttpUnauthorized;
-use Tnapf\Router\Exceptions\HttpUnavailableForLegalReasons;
-use Tnapf\Router\Exceptions\HttpUnprocessableEntity;
-use Tnapf\Router\Exceptions\HttpUnsupportedMediaType;
-use Tnapf\Router\Exceptions\HttpUpgradeRequired;
-use Tnapf\Router\Exceptions\HttpURITooLong;
-use Tnapf\Router\Exceptions\HttpVariantAlsoNegotiates;
-use Tnapf\Router\Exceptions\HttpVersionNotSupported;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 use Tnapf\Router\Router;
-use Tnapf\Router\Routing\Route;
+use Tnapf\Router\Routing\Methods;
+use Tnapf\Router\Routing\RouteRunner;
+
+use const SEEK_END;
 
 class RouterTests extends TestCase
 {
-    protected Router $router;
-
-    public function __construct(string $name)
+    public function newRouter(): Router
     {
-        parent::__construct($name);
-        $this->router = new Router();
+        $router = new Router();
+//        $router->catch(toCatch: Throwable, controller: static fn($request, $response, $route): TextResponse => new TextResponse($route->exception), method: "GET", path: "/404");
+        return $router;
     }
 
-    public function getTestRoutes(): array
+    public function testShorthands(): void
     {
-        return [
-            Route::new($this->router, "/", TestController::class, Methods::GET)
-                ->addStaticArgument("body", "index:GET")
-            ,
-            Route::new($this->router, "/", TestController::class, Methods::POST)
-                ->addStaticArgument("body", "index:POST")
-            ,
-            Route::new($this->router, "/", TestController::class, Methods::PUT)
-                ->addStaticArgument("body", "index:PUT")
-            ,
-            Route::new($this->router, "/", TestController::class, Methods::DELETE)
-                ->addStaticArgument("body", "index:DELETE")
-            ,
-            Route::new($this->router, "/", TestController::class, Methods::PATCH)
-                ->addStaticArgument("body", "index:PATCH")
-            ,
-            Route::new($this->router, "/", TestController::class, Methods::HEAD)
-                ->addStaticArgument("body", "index:HEAD")
-            ,
-            Route::new($this->router, "/", TestController::class, Methods::OPTIONS)
-                ->addStaticArgument("body", "index:OPTIONS")
-            ,
-            Route::new($this->router, "/testwith/{placeholder}", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", static function ($req, $res, $args) {
-                    unset($args->handler);
-                    return new JsonResponse($args);
-                })
-            ,
-            Route::new($this->router, "/users/{id}", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", static function ($req, $res, $args) {
-                    unset($args->handler);
-                    return new TextResponse("User {$args->id}");
-                })
-                ->setParameter("id", "[0-9]+")
-            ,
-            Route::new($this->router, "/401", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", static fn($req) => throw new HttpUnauthorized($req))
-            ,
-            Route::new($this->router, "/no401", TestController::class, Methods::GET)
-                ->addStaticArgument("handler", static fn($req) => throw new HttpUnauthorized($req))
-        ];
-    }
+        $router = $this->newRouter();
 
-    public function registerTestRoutes(): void
-    {
-        $this->router->clearAll();
-        foreach ($this->getTestRoutes() as $route) {
-            $this->router->addRoute($route);
+        foreach (Methods::ALL as $method) {
+            $router->{$method}("/", static fn(): TextResponse => new TextResponse($method));
+            $request = new ServerRequest(method: $method, uri: "/");
+            $response = $router->run($request);
+
+            $this->assertSame($method, (string)$response->getBody());
+        }
+
+        $router->clearAll();
+
+        $router->all("/", static fn(): TextResponse => new TextResponse("all"));
+
+        foreach (Methods::ALL as $method) {
+            $request = new ServerRequest(method: $method, uri: "/");
+            $response = $router->run($request);
+            $this->assertSame("all", (string)$response->getBody());
         }
     }
 
-    public function testAllRequestTypes(): void
+    public function testEmission(): void
     {
-        $this->registerTestRoutes();
+        $router = $this->newRouter();
 
-        foreach (Methods::cases() as $method) {
-            $request = new ServerRequest([], [], [], [], [], $method->value, "/");
-            $emitter = new StoreResponseEmitter();
+        $router->get("/", static fn(): TextResponse => new TextResponse("Hello World!"));
 
-            $this->router->run($request, $emitter);
+        $request = new ServerRequest(method: "GET", uri: "/");
+        $router->emit($request);
 
-            $this->assertEquals("index:{$method->value}", (string)$emitter->getResponse()->getBody(), "{$method->value} route failed to resolve");
-        }
+        $this->expectOutputString("Hello World!");
     }
 
-    public function testStaticPatterns(): void
+    public function test404(): void
     {
-        $this->registerTestRoutes();
-        $request = new ServerRequest([], [], [], [], [], "GET", "/");
-        $emitter = new StoreResponseEmitter();
+        $router = $this->newRouter();
 
-        $this->router->run($request, $emitter);
+        $request = new ServerRequest(method: "GET", uri: "/");
+        $response = $router->run($request);
 
-        $this->assertEquals("index:GET", (string)$emitter->getResponse()->getBody(), "Static routing failed");
+        $this->assertSame(404, $response->getStatusCode());
     }
 
-    public function testMiddleware(): void
+    public function test500(): void
     {
-        $this->router->get("/", TestController::class)
-            ->addStaticArgument("body", "2")
-            ->addMiddleware(TestMiddleware::class)
-        ;
+        $router = $this->newRouter();
 
-        $request = new ServerRequest([], [], [], [], [], "GET", "/");
-        $emitter = new StoreResponseEmitter();
+        $router->get("/exception", static function (): void {
+            throw new \Exception("Test");
+        });
 
-        $this->router->run($request, $emitter);
+        $request = new ServerRequest(method: "GET", uri: "/exception");
+        $response = $router->run($request);
 
-        $this->assertEquals("12", (string)$emitter->getResponse()->getBody(), "Middleware failed");
+        $this->assertSame(500, $response->getStatusCode());
     }
 
-    public function testPostware(): void
+    public function testPlaceholders(): void
     {
-        $this->router->get("/", TestController::class)
-            ->addStaticArgument("body", "2")
-            ->addPostware(TestPostware::class)
-        ;
+        $router = $this->newRouter();
 
-        $request = new ServerRequest([], [], [], [], [], "GET", "/");
-        $emitter = new StoreResponseEmitter();
+        $router->get("/hello/{name}", static function ($request, $response, $route): TextResponse {
+            return new TextResponse("Hello {$route->args->name}!");
+        });
 
-        $this->router->run($request, $emitter);
+        $request = new ServerRequest(method: "GET", uri: "/hello/world");
+        $response = $router->run($request);
 
-        $this->assertEquals("23", (string)$emitter->getResponse()->getBody(), "Postware failed");
+        $this->assertSame("Hello world!", (string)$response->getBody());
     }
 
-    public function testPostwareAndMiddleware(): void
+    public function testCustomEmitter(): void
     {
-        $this->router->get("/", TestController::class)
-            ->addStaticArgument("body", "2")
-            ->addMiddleware(TestMiddleware::class)
-            ->addPostware(TestPostware::class)
-        ;
+        $emitter = new class implements EmitterInterface {
+            public function emit(ResponseInterface $response, bool $withoutBody = false): void
+            {
+                echo "Hello World!";
+            }
+        };
 
-        $request = new ServerRequest([], [], [], [], [], "GET", "/");
-        $emitter = new StoreResponseEmitter();
+        $router = $this->newRouter();
+        $router->emit(new ServerRequest(method: "GET", uri: "/"), $emitter);
 
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Middleware and Postware failed");
+        $this->expectOutputString("Hello World!");
     }
 
-    public function testDynamicPatterns(): void
+    public function testGroupings(): void
     {
-        $this->registerTestRoutes();
-        $request = new ServerRequest([], [], [], [], [], "GET", "/users/123");
-        $emitter = new StoreResponseEmitter();
+        $router = $this->newRouter();
 
-        $this->router->run($request, $emitter);
+        $router->group("/users", static function (Router $router): void {
+            $router->get("/", static fn(): TextResponse => new TextResponse("List Users"));
 
-        $this->assertEquals('User 123', (string)$emitter->getResponse()->getBody(), "Placeholder regex failed");
+            $router->group(
+                "/{id}",
+                static function (Router $router): void {
+                    $router->get(
+                        "/",
+                        static function (
+                            ServerRequestInterface $request,
+                            ResponseInterface $response,
+                            RouteRunner $route
+                        ): ResponseInterface {
+                            $response->getBody()->write(" profile");
+                            return $route->next($request, $response);
+                        }
+                    );
 
-        $request = $request->withUri($request->getUri()->withPath("/users/abc"));
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals(404, $emitter->getResponse()->getStatusCode(), "Response should be 404");
-    }
-
-    public function testDynamicRegexPatterns(): void
-    {
-        $this->registerTestRoutes();
-        $request = new ServerRequest([], [], [], [], [], "GET", "/users/1");
-        $emitter = new StoreResponseEmitter();
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals("User 1", (string)$emitter->getResponse()->getBody(), "Regex routing failed");
-    }
-
-    public function testRoutingShorthands(): void
-    {
-        $emitter = new StoreResponseEmitter();
-        $this->router->all("/all", TestController::class)
-            ->addStaticArgument("body", "all")
-        ;
-
-        foreach (Methods::cases() as $methodCase) {
-            $request = new ServerRequest([], [], [], [], [], $methodCase->value, "/");
-            $uri = "/";
-            $this->router->{strtolower($methodCase->value)}($uri, TestController::class)
-                ->addStaticArgument("body", $methodCase->value)
-            ;
-
-            $this->router->run($request, $emitter);
-
-            $this->assertEquals($methodCase->value, (string)$emitter->getResponse()->getBody(), "{$methodCase->value} shorthand failed");
-
-            $request = $request->withUri($request->getUri()->withPath("/all"));
-
-            $this->router->run($request, $emitter);
-
-            $this->assertEquals("all", (string)$emitter->getResponse()->getBody(), "all shorthand failed");
-        }
-    }
-
-    public function testHttpExceptions(): void
-    {
-        $request = new ServerRequest([], [], [], [], [], "GET", "/route");
-        $emitter = new StoreResponseEmitter();
-
-        foreach ($this->getAllHttpExceptionClasses() as $exception) {
-            $this->router->addRoute(
-                Route::new($this->router, "/route", TestController::class, Methods::GET)
-                    ->addStaticArgument("handler", static fn($req) => throw new $exception($req))
+                    $router->get(
+                        "/json",
+                        static function (
+                            ServerRequestInterface $request,
+                            ResponseInterface $response,
+                            RouteRunner $route
+                        ): ResponseInterface {
+                            $response->getBody()->write(" json object");
+                            return $route->next($request, $response);
+                        }
+                    );
+                },
+                middlewares: [
+                    static function (
+                        ServerRequestInterface $request,
+                        ResponseInterface $response,
+                        RouteRunner $route
+                    ): ResponseInterface {
+                        $response = new TextResponse("User {$route->args->id}");
+                        $response->getBody()->seek(0, SEEK_END);
+                        return $route->next($request, $response);
+                    }
+                ],
+                postwares: [
+                    static function (
+                        ServerRequestInterface $request,
+                        ResponseInterface $response,
+                        RouteRunner $route
+                    ): ResponseInterface {
+                        $response->getBody()->write($route->args->eof);
+                        return $response;
+                    }
+                ],
+                parameters: [
+                    "id" => "[0-9]{8}"
+                ],
+                staticArguments: [
+                    "eof" => "!"
+                ]
             );
+        });
 
-            $this->router->run($request, $emitter);
+        $id = 12345678;
+        $requests = [
+            "/users" => "List Users",
+            "/users/{$id}" => "User {$id} profile!",
+            "/users/{$id}/json" => "User {$id} json object!"
+        ];
 
-            $this->assertEquals($exception::CODE, $emitter->getResponse()->getStatusCode(), "{$exception} failed to throw");
+        foreach ($requests as $uri => $expectedBody) {
+            $request = new ServerRequest(method: "GET", uri: $uri);
+
+            $response = $router->run($request);
+            $body = (string)$response->getBody();
+
+            $this->assertSame($expectedBody, $body);
         }
     }
 
     public function testCatching(): void
     {
-        $this->registerTestRoutes();
-        $request = new ServerRequest([], [], [], [], [], "GET", "/401");
-        $emitter = new StoreResponseEmitter();
+        $router = $this->newRouter();
 
-        $this->router->catch(HttpUnauthorized::class, TestController::class)
-            ->addStaticArgument("body", "Unauthorized")
-        ;
+        $router->get("/catch", static function (): void {
+            throw new \Exception("Test");
+        });
 
-        $this->router->run($request, $emitter);
+        $router->catch(Exception::class, static function (): ResponseInterface {
+            return new TextResponse("Caught!", 500);
+        });
 
-        $this->assertEquals("Unauthorized", (string)$emitter->getResponse()->getBody(), "Catching failed");
-    }
+        $request = new ServerRequest(method: "GET", uri: "/catch");
+        $response = $router->run($request);
 
-    public function testCatcherNotRegisteringTwice(): void
-    {
-        $this->router->clearAll();
-
-        $this->router->catch(HttpUnauthorized::class, TestController::class);
-        $this->router->catch(HttpUnauthorized::class, TestController::class);
-
-        $this->assertCount(1, $this->router->getCatchers(), "Catcher registered twice");
-    }
-
-    public function testThrowingNonHttpException(): void
-    {
-        $this->router->clearAll();
-
-        $this->expectException(Exception::class);
-
-        $this->router->get("/", TestController::class)
-            ->addStaticArgument("handler", static fn($req) => throw new Exception("Test"))
-        ;
-
-        $request = new ServerRequest([], [], [], [], [], "GET", "/");
-        $emitter = new StoreResponseEmitter();
-
-        $this->router->run($request, $emitter);
-    }
-
-    public function testCustomEmissionTypes(): void
-    {
-        $this->router->clearAll();
-
-        $this->router->get("/", TestController::class)
-            ->addStaticArgument("handler", static fn($req) => throw new HttpInternalServerError($req))
-        ;
-
-        $request = new ServerRequest([], [], [], [], [], "GET", "/");
-        $emitter = new StoreResponseEmitter();
-
-        $this->router->emitHttpExceptions(Router::EMIT_JSON_RESPONSE);
-        $this->router->run($request, $emitter);
-
-        $expectedCode = HttpInternalServerError::CODE;
-        $expectedDescription = HttpInternalServerError::DESCRIPTION;
-        $expectedPhrase = HttpInternalServerError::PHRASE;
-        $expectedHref = HttpInternalServerError::HREF;
-        $expectedBody = "{\"description\":\"{$expectedDescription}\",\"phrase\":\"{$expectedPhrase}\",\"code\":{$expectedCode},\"href\":\"{$expectedHref}\"}";
-
-        $this->assertEquals("application/json; charset=UTF-8", $emitter->getResponse()->getHeaderLine("Content-Type"), "Custom emission type failed");
-        $this->assertEquals($expectedBody, (string)$emitter->getResponse()->getBody(), "Custom emission type failed");
-    }
-
-    public function testCatchingSpecificUri(): void
-    {
-        $this->registerTestRoutes();
-        $request = new ServerRequest([], [], [], [], [], "GET", "/401");
-        $emitter = new StoreResponseEmitter();
-
-        $this->router->catch(HttpUnauthorized::class, TestController::class, "/401")
-            ->addStaticArgument("body", "Unauthorized")
-        ;
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals("Unauthorized", (string)$emitter->getResponse()->getBody(), "Catching failed");
-
-        $request = $request->withUri($request->getUri()->withPath("/no401"));
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals(401, $emitter->getResponse()->getStatusCode(), "Response should be 401");
-    }
-
-    public function testExceptionForImproperCatcher(): void
-    {
-        $this->router->clearAll();
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->router->catch(stdClass::class, TestController::class);
-    }
-
-    public function testGrouping(): void
-    {
-        $this->router->clearAll();
-        $this->router->group(
-            "/users",
-            function () {
-                $this->router->get("/{id}", TestController::class);
-                $this->router->get("/", TestController::class)
-                    ->addStaticArgument("body", "1");
-            },
-            [TestMiddleware::class],
-            [TestPostware::class],
-            ["id" => "[0-9]+"],
-            ["body" => "2"]
-        );
-
-        $request = new ServerRequest([], [], [], [], [], "GET", "/users/1234");
-        $emitter = new StoreResponseEmitter();
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Grouping failed");
-
-        $request = $request->withUri($request->getUri()->withPath("/users"));
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals("113", (string)$emitter->getResponse()->getBody(), "Grouping failed");
-    }
-
-    public function testNestedGrouping(): void
-    {
-        $this->router->clearAll();
-        $this->router->group("/users", function () {
-            $this->router->group("/{id}", function () {
-                $this->router->get("/test", TestController::class);
-            });
-        }, [
-            TestMiddleware::class
-        ], [
-            TestPostware::class
-        ], [
-            "id" => "[0-9]+"
-        ], [
-            "body" => "2"
-        ]);
-
-        $request = new ServerRequest([], [], [], [], [], "GET", "/users/1234/test");
-        $emitter = new StoreResponseEmitter();
-
-        $this->router->run($request, $emitter);
-
-        $this->assertEquals("123", (string)$emitter->getResponse()->getBody(), "Nested grouping failed");
-    }
-
-    /**
-     * @return HttpException[]
-     */
-    public function getAllHttpExceptionClasses(): array
-    {
-        return [
-            HttpBadRequest::class,
-            HttpUnauthorized::class,
-            HttpPaymentRequired::class,
-            HttpForbidden::class,
-            HttpNotFound::class,
-            HttpMethodNotAllowed::class,
-            HttpNotAcceptable::class,
-            HttpProxyAuthenticationRequired::class,
-            HttpRequestTimeout::class,
-            HttpConflict::class,
-            HttpGone::class,
-            HttpLengthRequired::class,
-            HttpPreconditionFailed::class,
-            HttpPayloadTooLarge::class,
-            HttpURITooLong::class,
-            HttpUnsupportedMediaType::class,
-            HttpRangeNotSatisfiable::class,
-            HttpExpectationFailed::class,
-            HttpImATeapot::class,
-            HttpUnprocessableEntity::class,
-            HttpLocked::class,
-            HttpFailedDependency::class,
-            HttpUpgradeRequired::class,
-            HttpPreconditionRequired::class,
-            HttpTooManyRequests::class,
-            HttpRequestHeaderFieldsTooLarge::class,
-            HttpUnavailableForLegalReasons::class,
-            HttpInternalServerError::class,
-            HttpNotImplemented::class,
-            HttpBadGateway::class,
-            HttpServiceUnavailable::class,
-            HttpGatewayTimeout::class,
-            HttpVersionNotSupported::class,
-            HttpVariantAlsoNegotiates::class,
-            HttpInsufficientStorage::class,
-            HttpNetworkAuthenticationRequired::class
-        ];
+        $this->assertSame("Caught!", (string)$response->getBody());
+        $this->assertSame(500, $response->getStatusCode());
     }
 }
