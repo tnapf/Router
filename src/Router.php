@@ -281,8 +281,6 @@ class Router
         try {
             return $runner->run($request);
         } catch (Throwable $e) {
-            $catchers = array_keys($this->getCatchers(false));
-
             $runner =
                 $this->resolveRoute($this->getCatchers()[$e::class] ?? [], $request) ??
                 $this->resolveRoute($this->getCatchers()[Throwable::class] ?? [], $request);
