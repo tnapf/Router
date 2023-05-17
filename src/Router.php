@@ -18,7 +18,6 @@ use stdClass;
 use Throwable;
 
 use function array_keys;
-use function array_map;
 use function in_array;
 use function strtoupper;
 
@@ -248,7 +247,11 @@ class Router
 
         $sortByLength = static fn(Route $a, Route $b) => (strlen($a->uri) > strlen($b->uri));
 
-        array_map(static fn(array &$catcher) => usort($catcher, $sortByLength), $this->catchers);
+        foreach ($this->catchers as &$catcher) {
+            usort($catcher, $sortByLength);
+        }
+
+        unset($catcher);
 
         usort($this->routes, $sortByLength);
 
