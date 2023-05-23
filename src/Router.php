@@ -35,6 +35,11 @@ class Router
     protected array $catchers = [];
     protected bool $sorted = false;
 
+    public function __construct()
+    {
+        $this->catchers[Throwable::class] = [];
+    }
+
     public function get(string $uri, ControllerInterface|Closure $controller): Route
     {
         return $this->addRoute(Route::new($uri, $controller, $this->getBaseUri(), Methods::GET));
@@ -261,7 +266,7 @@ class Router
 
     public function clearCatchers(): void
     {
-        $this->catchers = [];
+        $this->catchers = [Throwable::class => []];
     }
 
     public function clearAll(): void
