@@ -23,25 +23,21 @@ class RouterTest extends TestCase
 
         if ($withCatcher) {
             $router->catch(
-                toCatch: Throwable::class,
-                controller: static function (
+                Throwable::class,
+                static fn(
                     ServerRequestInterface $request,
                     ResponseInterface $response,
                     RouteRunner $route
-                ): TextResponse {
-                    return new TextResponse($route->exception->getMessage() . PHP_EOL . $route->exception->getTraceAsString() . PHP_EOL, 500);
-                }
+                ): TextResponse => new TextResponse((string)$route->exception, 500)
             );
 
             $router->catch(
-                toCatch: HttpNotFound::class,
-                controller: static function (
+                HttpNotFound::class,
+                static fn(
                     ServerRequestInterface $request,
                     ResponseInterface $response,
                     RouteRunner $route
-                ) {
-                    return new TextResponse($route->exception->getMessage(), 404);
-                }
+                ): TextResponse => new TextResponse($route->exception->getMessage(), 404)
             );
         }
 
