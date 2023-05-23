@@ -10,12 +10,10 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
+use Tnapf\Router\Exceptions\HttpNotFound;
 use Tnapf\Router\Router;
 use Tnapf\Router\Routing\Methods;
 use Tnapf\Router\Routing\RouteRunner;
-
-use const PHP_EOL;
-use const SEEK_END;
 
 class RouterTest extends TestCase
 {
@@ -31,7 +29,18 @@ class RouterTest extends TestCase
                     ResponseInterface $response,
                     RouteRunner $route
                 ): TextResponse {
-                    echo $route->exception->getMessage() . PHP_EOL . $route->exception->getTraceAsString() . PHP_EOL;
+                    return new TextResponse($route->exception->getMessage() . PHP_EOL . $route->exception->getTraceAsString() . PHP_EOL, 500);
+                }
+            );
+
+            $router->catch(
+                toCatch: HttpNotFound::class,
+                controller: static function (
+                    ServerRequestInterface $request,
+                    ResponseInterface $response,
+                    RouteRunner $route
+                ) {
+                    return new TextResponse($route->exception->getMessage(), 404);
                 }
             );
         }
@@ -86,7 +95,7 @@ class RouterTest extends TestCase
 
     public function test500(): void
     {
-        $router = $this->newRouter(false);
+        $router = $this->newRouter();
 
         $router->get("/exception", static function (): void {
             throw new Exception("Test");
