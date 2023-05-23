@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tnapf\Router\Routing\Methods;
 use Tnapf\Router\Routing\Route;
 
-class RouteTests extends TestCase
+class RouteTest extends TestCase
 {
     public function testItPrefixesSlash(): void
     {

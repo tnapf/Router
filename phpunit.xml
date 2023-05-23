@@ -5,8 +5,7 @@
          cacheDirectory=".phpunit.cache">
     <testsuites>
         <testsuite name="default">
-            <file>tests/RouterTests.php</file>
-            <file>tests/RouteTests.php</file>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
     <coverage />
