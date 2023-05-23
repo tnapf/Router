@@ -7,8 +7,11 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class HttpNotFound extends Exception
 {
-    public function __construct(public readonly ServerRequestInterface $request, int $code = 404, ?Throwable $previous = null)
-    {
+    public function __construct(
+        public readonly ServerRequestInterface $request,
+        int $code = 404,
+        ?Throwable $previous = null
+    ) {
         parent::__construct("No controller bound to {$request->getUri()->getPath()}!", $code, $previous);
     }
 }
