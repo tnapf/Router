@@ -245,13 +245,9 @@ class Router
             return;
         }
 
-        $sortByLength = static fn(Route $a, Route $b) => (strlen($a->uri) > strlen($b->uri));
+        $sortByLength = static fn(Route $a, Route $b) => (strlen($a->uri) <=> strlen($b->uri));
 
-        foreach ($this->catchers as &$catcher) {
-            usort($catcher, $sortByLength);
-        }
-
-        unset($catcher);
+        array_walk($this->catchers, static fn(array &$catcher) => usort($catcher, $sortByLength));
 
         usort($this->routes, $sortByLength);
 
