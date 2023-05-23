@@ -288,16 +288,15 @@ class Router
 
             return $runner->run($request);
         } catch (Throwable $e) {
-            $runner =
-                $this->resolveRoute($this->getCatchers()[$e::class] ?? [], $request) ??
-                $this->resolveRoute($this->getCatchers()[Throwable::class] ?? [], $request);
+            $catchers = $this->getCatchers();
+            $exceptionCatchers = $catchers[$e::class] ?? $catchers[Throwable::class];
 
-            if ($runner === null || $catching) {
+            if (empty($exceptionCatchers) || $catching) {
                 throw $e;
             }
 
+            $runner = $this->resolveRoute($exceptionCatchers, $request);
             $runner->exception = $e;
-
             return $this->invokeRoute($request, $response, $runner, true);
         }
     }
