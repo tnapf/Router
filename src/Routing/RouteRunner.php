@@ -68,13 +68,7 @@ class RouteRunner
     {
         $runner = new self();
 
-        $runner->appendControllersToRun(
-            ...[
-                ...$route->getMiddleware(),
-                $route->controller,
-                ...$route->getPostware()
-            ]
-        );
+        $runner->controllersToRun = [...$route->getMiddleware(), $route->controller, ...$route->getPostware()];
 
         if ($args !== null) {
             $runner->args = $args;
