@@ -9,7 +9,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use HttpSoft\Emitter\EmitterInterface;
 use Tnapf\Router\Routing\RouteRunner;
-use HttpSoft\Response\EmptyResponse;
 use HttpSoft\Emitter\SapiEmitter;
 use Tnapf\Router\Routing\Methods;
 use Tnapf\Router\Routing\Route;
