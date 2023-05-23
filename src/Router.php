@@ -3,6 +3,7 @@
 namespace Tnapf\Router;
 
 use HttpSoft\ServerRequest\ServerRequestCreator;
+use Tnapf\Router\Exceptions\HttpNotFound;
 use Tnapf\Router\Interfaces\ControllerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -273,10 +274,14 @@ class Router
     protected function invokeRoute(
         ServerRequestInterface $request,
         ResponseInterface $response,
-        RouteRunner $runner,
+        ?RouteRunner $runner = null,
         bool $catching = false
     ): ResponseInterface {
         try {
+            if ($runner === null) {
+                throw new HttpNotFound($request);
+            }
+
             return $runner->run($request);
         } catch (Throwable $e) {
             $runner =
@@ -298,10 +303,6 @@ class Router
         $routes = $this->getRoutes();
         $request ??= ServerRequestCreator::createFromGlobals();
         $runner = $this->resolveRoute($routes, $request);
-
-        if ($runner === null) {
-            return new EmptyResponse(404);
-        }
 
         return $this->invokeRoute($request, new Response(), $runner);
     }
