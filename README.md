@@ -426,3 +426,27 @@ $router->get("/staticPage", static fn($request, $response, $route) => new TextRe
 ```
 
 You would then be able to access the argument in your controller like any other argument. Note that all static arguments will override any arguments that are passed in the URI.
+
+# Example using with React/Http
+
+```php
+<?php
+
+use HttpSoft\Response\TextResponse;
+use Psr\Http\Message\ResponseInterface;
+use Tnapf\Router\Router;
+
+require_once __DIR__ . "/../vendor/autoload.php";
+
+$router = new Router();
+
+$router->get("/", static fn(): ResponseInterface => new TextResponse("Hello World!")); // register routes outside the HttpServer closure!!
+
+$http = new React\Http\HttpServer(static function (Psr\Http\Message\ServerRequestInterface $request) use ($router) {
+    return $router->run($request); // pass the request to the router
+});
+
+$socket = new React\Socket\SocketServer('0.0.0.0:8000');
+
+$http->listen($socket);
+```
