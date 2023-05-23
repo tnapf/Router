@@ -239,4 +239,18 @@ class RouterTest extends TestCase
         $this->assertSame("Caught!", (string)$response->getBody());
         $this->assertSame(500, $response->getStatusCode());
     }
+
+    public function testNotCatching(): void
+    {
+        $router = $this->newRouter(false);
+
+        $router->get("/catch", static function (): void {
+            throw new Exception("Test");
+        });
+
+        $this->expectException(Exception::class);
+
+        $request = new ServerRequest(method: "GET", uri: "/catch");
+        $router->run($request);
+    }
 }
