@@ -28,6 +28,8 @@ class RouteRunner
     {
         $this->throwIfRunning();
 
+        $this->isRunning = true;
+
         $response = $this->next($request, $response ?? new Response());
 
         $this->isRunning = false;
