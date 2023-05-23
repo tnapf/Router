@@ -289,7 +289,7 @@ class Router
                 $this->resolveRoute($this->getCatchers()[Throwable::class] ?? [], $request);
 
             if ($runner === null || $catching) {
-                return new EmptyResponse(500);
+                throw $e;
             }
 
             $runner->exception = $e;
