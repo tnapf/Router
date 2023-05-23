@@ -21,6 +21,7 @@ Totally Not Another PHP Framework's Route Component
 - [Postware](#postware)
 - [Group routes](#group-routes)
 - [Static Arguments](#static-arguments)
+- [React/Http Integration](#react/http-integration)
 
 # Installation
 
@@ -427,7 +428,7 @@ $router->get("/staticPage", static fn($request, $response, $route) => new TextRe
 
 You would then be able to access the argument in your controller like any other argument. Note that all static arguments will override any arguments that are passed in the URI.
 
-# Example using with React/Http
+# React/Http Integration
 
 ```php
 <?php
