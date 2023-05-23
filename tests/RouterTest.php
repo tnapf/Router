@@ -17,7 +17,7 @@ use Tnapf\Router\Routing\RouteRunner;
 use const PHP_EOL;
 use const SEEK_END;
 
-class RouterTests extends TestCase
+class RouterTest extends TestCase
 {
     public function newRouter(bool $withCatcher = true): Router
     {
