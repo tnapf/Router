@@ -12,7 +12,6 @@ Totally Not Another PHP Framework's Route Component
   - [Dynamic Placeholder-based Route Patterns](#dynamic-placeholder-based-route-patterns)
   - [Dynamic PCRE-based Route Patterns](#dynamic-pcre-based-route-patterns)
 - [Controllers](#controllers)
-- [Template Engine Integration](#template-engine-integration)
 - [Responding to requests](#responding-to-requests)
 - [Catchable Routes](#catchable-routes)
   - [Catching](#catching)
@@ -21,7 +20,7 @@ Totally Not Another PHP Framework's Route Component
 - [Postware](#postware)
 - [Group routes](#group-routes)
 - [Static Arguments](#static-arguments)
-- [React/Http Integration](#react/http-integration)
+- [React/Http Integration](#reacthttp-integration)
 
 # Installation
 
