@@ -4,6 +4,7 @@ namespace Tnapf\Router\Exceptions;
 
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 
 class HttpNotFound extends Exception
 {
