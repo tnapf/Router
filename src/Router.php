@@ -290,12 +290,12 @@ class Router
         } catch (Throwable $e) {
             $catchers = $this->getCatchers();
             $exceptionCatchers = $catchers[$e::class] ?? $catchers[Throwable::class];
+            $runner = $this->resolveRoute($exceptionCatchers, $request);
 
-            if (empty($exceptionCatchers) || $catching) {
+            if ($runner === null || $catching) {
                 throw $e;
             }
 
-            $runner = $this->resolveRoute($exceptionCatchers, $request);
             $runner->exception = $e;
             return $this->invokeRoute($request, $response, $runner, true);
         }
